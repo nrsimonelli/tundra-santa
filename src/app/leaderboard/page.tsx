@@ -16,21 +16,14 @@ export default async function Leaderboard() {
     .select()
     .order('current_rating->ordinal', { ascending: false })
 
-  const hasValidOrdinal = (rating: Json) => {
-    return (
-      typeof rating === 'object' &&
-      typeof (rating as { ordinal: number }).ordinal === 'number'
-    )
-  }
-
   return (
     <div className='max-w-7xl mx-auto shadow-lg -mt-20 z-10 bg-background rounded-md p-6'>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Rank</TableHead>
-            <TableHead>Player</TableHead>
-            <TableHead>Rating</TableHead>
+            <TableHead className='text-primary'>Rank</TableHead>
+            <TableHead className='text-primary'>Player</TableHead>
+            <TableHead className='text-primary'>Rating</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
