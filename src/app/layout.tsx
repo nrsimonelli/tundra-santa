@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { DM_Sans as FontSans } from 'next/font/google'
+import { Inter as FontSans } from 'next/font/google'
 import '../styles/globals.css'
 import { cn } from '@/lib/utils'
 import { TopNav } from '@/components/top-nav'
@@ -26,8 +26,8 @@ export default function RootLayout({
         )}
       >
         <TopNav />
-        <div className='text-background bg-gradient-to-bl from-[#0acffe] to-[#495aff] flex justify-center min-h-[450px]'>
-          <div className='flex flex-col items-start justify-center max-w-7xl w-full px-6 space-y-2'>
+        <div className='text-background bg-gradient-to-tr to-[#0acffe] from-[#495aff] flex justify-center min-h-[450px]'>
+          <div className='flex flex-col items-start justify-center max-w-5xl w-full px-6 space-y-2'>
             <h1 className='text-4xl lg:text-6xl font-bold'>
               Tournament Scythe
             </h1>
