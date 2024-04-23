@@ -1,14 +1,22 @@
+import { Button } from '@/components/ui/button'
+
 import Image from 'next/image'
+import Link from 'next/link'
 
 export default function Home() {
   return (
-    <div className='flex flex-col items-center justify-between p-24'>
-      <p>
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Explicabo
-        praesentium est commodi nemo? Repudiandae obcaecati similique cumque
-        veritatis exercitationem laboriosam aliquam, dignissimos culpa in itaque
-        sed esse quia iusto omnis?
-      </p>
+    <div className='flex gap-4 flex-col sm:flex-row items-center justify-center py-24'>
+      <a
+        className='pointer-events-auto text-primary font-semibold'
+        href='https://discord.gg/HRvysu2QT2'
+        target='_blank'
+        rel='noopener noreferrer'
+      >
+        Join the discord
+      </a>
+      <Link href={'leaderboard'}>
+        <Button>View the leaderboard</Button>
+      </Link>
     </div>
   )
 }

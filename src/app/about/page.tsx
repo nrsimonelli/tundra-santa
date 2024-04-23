@@ -65,7 +65,7 @@ export default function About() {
               target='_blank'
               rel='noopener noreferrer'
             >
-              PlacketLuce
+              PlackettLuce
             </a>{' '}
             model from openskill.
           </p>
