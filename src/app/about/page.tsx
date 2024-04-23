@@ -28,6 +28,7 @@ export default function About() {
             >
               Scythe discord
             </a>
+            .
           </p>
         </div>
 
@@ -57,7 +58,7 @@ export default function About() {
             rating of 1200. As players continue to compete in games and events
             the system becomes more confident in their skill level and the
             degree to which their rating will change from a single game
-            decreases overtime. For more information on the statistical model
+            decreases over time. For more information on the statistical model
             behind the rating system, reference the{' '}
             <a
               className='pointer-events-auto text-primary font-semibold'
@@ -72,45 +73,45 @@ export default function About() {
         </div>
         <div className='space-y-4'>
           <p className='text-3xl font-bold text-primary'>
-            What events contribue to Tournament Rating?
+            What events contribute to Tournament Rating?
           </p>
           <p>
-            While we havent been able to collect perfect records of every
+            While we have not been able to collect perfect records of every
             competitive event, organizers and community members have done a
-            great job perserving the history of competitive Scythe. Through
+            great job preserving the history of competitive Scythe. Through
             those efforts the following events have been fully recorded and
             processed into the current tournament rating system:
           </p>
           <div className='space-y-2'>
             <p>2020</p>
             <ul>
-              <li>First DE tournament</li>
-              <li>Second DE tournament</li>
+              <li>First DE Tournament</li>
+              <li>Second DE Tournament</li>
             </ul>
           </div>
           <div className='space-y-2'>
             <p>2021</p>
             <ul>
-              <li>Draft kings standard</li>
-              <li>Draft kings swiss</li>
-              <li>May classic</li>
-              <li>Winter cup</li>
+              <li>Draft Kings Standard</li>
+              <li>Draft kings Swiss</li>
+              <li>May Classic</li>
+              <li>Winter Cup</li>
             </ul>
           </div>
           <div className='space-y-2'>
             <p>2022</p>
             <ul>
-              <li>February draft</li>
-              <li>May mashup</li>
-              <li>September scenarios</li>
-              <li>Factory rush</li>
+              <li>February Draft</li>
+              <li>May Mashup</li>
+              <li>September Scenarios</li>
+              <li>Factory Rush</li>
             </ul>
           </div>
           <div className='space-y-2'>
             <p>2023</p>
             <ul>
-              <li>New years tournament</li>
-              <li>Factory rush</li>
+              <li>New Years Tournament</li>
+              <li>Factory Rush</li>
             </ul>
           </div>
           <div className='space-y-2'>
@@ -133,7 +134,7 @@ export default function About() {
           </p>
           <p>
             There are plans to expand the rating system to include other event
-            formats, most noteably the 1v1 league style events frequently run on
+            formats, most noteably the 1v1 League-style events frequently run on
             discord. Currently, the tournament rating system will continue to
             collect the results of 3 and 4 player events as other features are
             developed.

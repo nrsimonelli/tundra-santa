@@ -1,6 +1,7 @@
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -19,6 +20,7 @@ export default async function Leaderboard() {
   return (
     <div className='max-w-5xl mx-auto shadow-lg -mt-20 z-10 bg-background rounded-md p-6'>
       <Table>
+        <TableCaption>Updated February, 2024</TableCaption>
         <TableHeader>
           <TableRow>
             <TableHead className='text-primary'>Rank</TableHead>
