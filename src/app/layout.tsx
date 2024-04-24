@@ -8,7 +8,7 @@ import { Footer } from '@/components/footer'
 const fontSans = FontSans({ subsets: ['latin'], variable: '--font-sans' })
 
 export const metadata: Metadata = {
-  title: 'Scythe Tournament',
+  title: 'Scythe Tournament Rating',
   description: 'The official tournament rating system for competitive Scythe.',
 }
 
