@@ -37,13 +37,14 @@ export default function Chart({
           tickLine={false}
           axisLine={false}
           fontSize={12}
+          ticks={[400, 800, 1200, 1600, 2000]}
         />
         <Tooltip />
         <Area
           type='monotone'
           dataKey='rating'
           fill='primary'
-          fillOpacity={'0.5'}
+          fillOpacity={'0.6'}
           className='fill-primary'
         />
       </AreaChart>

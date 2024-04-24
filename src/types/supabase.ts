@@ -166,19 +166,19 @@ export type Database = {
           created_at: string
           current_rating: Json | null
           id: number
-          username: string | null
+          username: string
         }
         Insert: {
           created_at?: string
           current_rating?: Json | null
           id?: number
-          username?: string | null
+          username: string
         }
         Update: {
           created_at?: string
           current_rating?: Json | null
           id?: number
-          username?: string | null
+          username?: string
         }
         Relationships: []
       }
