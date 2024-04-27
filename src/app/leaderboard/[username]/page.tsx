@@ -54,27 +54,27 @@ export default async function PlayerProfile({
     })
 
   return (
-    <div className='flex gap-4 flex-col items-start md:flex-row justify-start flex-wrap'>
+    <div className='flex space-y-8 flex-col items-start md:flex-row justify-start flex-wrap'>
+      <div className='inline-flex text-3xl font-semibold space-x-2 w-full justify-start md:justify-center'>
+        <p>Player profile:</p>
+        <p className='text-primary'>{username}</p>
+      </div>
       <div className='flex-col flex space-y-4'>
         <div className='max-w-[300px] w-full space-y-2'>
-          <p className='text-2xl text-primary font-semibold uppercase'>
-            {username}
-          </p>
+          <p className='text-2xl text-foreground font-semibold'>Stats</p>
           <div>
-            <p className=''>Rating: {Math.round(current_rating as number)}</p>
-            <p className=''>Games won: {wins}</p>
-          </div>
-          {/* <div className='inline-flex items-center w-full'>
-            <p className='flex flex-[2] '>
-              tournament championships:
+            <p className=''>
+              Current rating: {Math.round(current_rating as number)}
             </p>
-            <p className='flex flex-[1]'>TBD</p>
-          </div> */}
+            <p className=''>Game wins: {wins}</p>
+          </div>
         </div>
 
         <div className='max-w-[300px] w-full'>
           <div className='space-y-2'>
-            <p className='font-semibold text-2xl text-primary'>Event History</p>
+            <p className='font-semibold text-2xl text-foreground'>
+              Event History
+            </p>
             <div>
               {event_participation.map((entry) => {
                 return <p key={entry.event?.id}>{entry.event?.name}</p>
@@ -85,7 +85,7 @@ export default async function PlayerProfile({
       </div>
 
       <div className='flex-col space-y-4 min-w-[300px] w-full flex flex-1'>
-        <p className='mx-auto text-2xl font-semibold text-primary'>
+        <p className='md:mx-auto mx-0 text-2xl font-semibold text-foreground'>
           Tournament Rating by Event
         </p>
         <Chart data={chartData} />
@@ -96,8 +96,6 @@ export default async function PlayerProfile({
           Back to leaderboard
         </Link>
       </div>
-      {/* format json data nicely */}
-      {/* <pre>{JSON.stringify(data, null, 2)}</pre> */}
     </div>
   )
 }

@@ -58,6 +58,7 @@ export type Database = {
           num_players_per_game: number | null
           rating_event: boolean | null
           start_date: string | null
+          winner: number | null
         }
         Insert: {
           bid?: boolean | null
@@ -68,6 +69,7 @@ export type Database = {
           num_players_per_game?: number | null
           rating_event?: boolean | null
           start_date?: string | null
+          winner?: number | null
         }
         Update: {
           bid?: boolean | null
@@ -78,8 +80,17 @@ export type Database = {
           num_players_per_game?: number | null
           rating_event?: boolean | null
           start_date?: string | null
+          winner?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "events_winner_fkey"
+            columns: ["winner"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       game_participation: {
         Row: {

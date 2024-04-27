@@ -72,7 +72,7 @@ export default function About() {
           </p>
         </div>
         <div className='space-y-4'>
-          <p className='text-3xl font-bold text-primary'>
+          <p className='text-2xl font-bold text-primary'>
             What events contribute to Tournament Rating?
           </p>
           <p>
