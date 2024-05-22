@@ -86,18 +86,20 @@ export default async function PlayerProfile({
         </div>
       </div>
 
-      <div className='flex-col space-y-4 min-w-[300px] w-full flex flex-1'>
-        <p className='md:mx-auto mx-0 text-2xl font-semibold text-foreground'>
-          Tournament Rating by Event
-        </p>
-        <Chart data={chartData} />
-        <Link
-          className='mx-auto py-2 font-semibold text-primary'
-          href='/leaderboard'
-        >
-          Back to leaderboard
-        </Link>
-      </div>
+      {chartData.length > 1 && (
+        <div className='flex-col space-y-4 min-w-[300px] w-full flex flex-1'>
+          <p className='md:mx-auto mx-0 text-2xl font-semibold text-foreground'>
+            Tournament Rating by Event
+          </p>
+          <Chart data={chartData} />
+          <Link
+            className='mx-auto py-2 font-semibold text-primary'
+            href='/leaderboard'
+          >
+            Back to leaderboard
+          </Link>
+        </div>
+      )}
     </div>
   )
 }

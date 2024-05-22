@@ -43,7 +43,10 @@ export default function Chart({
           tickLine={false}
           axisLine={false}
           fontSize={12}
-          ticks={[400, 800, 1200, 1600, 2000]}
+          domain={[
+            (dataMin: number) => (dataMin < 1200 ? dataMin - 100 : 1200),
+            (dataMax: number) => (dataMax > 2000 ? dataMax + 100 : 2000),
+          ]}
         />
         <Tooltip />
         <Area
