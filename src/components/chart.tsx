@@ -25,6 +25,12 @@ export default function Chart({
   return (
     <ResponsiveContainer width='100%' height={300}>
       <AreaChart data={data}>
+        <defs>
+          <linearGradient id='gradient' x1='0' y1='0' x2='0' y2='1'>
+            <stop offset='5%' stopColor='#495aff' stopOpacity={0.8} />
+            <stop offset='95%' stopColor='#0acffe' stopOpacity={0} />
+          </linearGradient>
+        </defs>
         <XAxis
           dataKey='name'
           stroke='#888888'
@@ -43,8 +49,8 @@ export default function Chart({
         <Area
           type='monotone'
           dataKey='rating'
-          fill='primary'
-          fillOpacity={'0.6'}
+          fill='url(#gradient)'
+          fillOpacity={'1'}
           className='fill-primary'
         />
       </AreaChart>
