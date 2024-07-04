@@ -19,7 +19,7 @@ export default async function Leaderboard() {
 
   return (
     <Table>
-      <TableCaption>Updated February, 2024</TableCaption>
+      <TableCaption>Updated July, 2024</TableCaption>
       <TableHeader>
         <TableRow>
           <TableHead className='text-primary'>Rank</TableHead>
