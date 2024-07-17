@@ -93,7 +93,7 @@ export default function About() {
             <p>2021</p>
             <ul>
               <li>Draft Kings Standard</li>
-              <li>Draft kings Swiss</li>
+              <li>Draft Kings Swiss</li>
               <li>May Classic</li>
               <li>Winter Cup</li>
             </ul>
@@ -118,11 +118,9 @@ export default function About() {
             <p>2024</p>
             <ul>
               <li>IceBowl</li>
+              <li>Spring Autobidder Draft</li>
               <li>
-                <i>Spring autobidder draft (Upcoming)</i>
-              </li>
-              <li>
-                <i>Factory rush (Upcoming)</i>
+                <i>Factory Rush (Upcoming)</i>
               </li>
             </ul>
           </div>
@@ -134,7 +132,7 @@ export default function About() {
           </p>
           <p>
             There are plans to expand the rating system to include other event
-            formats, most noteably the 1v1 League-style events frequently run on
+            formats, most notably the 1v1 League-style events frequently run on
             discord. Currently, the tournament rating system will continue to
             collect the results of 3 and 4 player events as other features are
             developed.

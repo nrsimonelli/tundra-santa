@@ -55,8 +55,8 @@ export default async function PlayerProfile({
 
   return (
     <div className='flex space-y-8 flex-col items-start md:flex-row justify-start flex-wrap'>
-      <div className='inline-flex text-3xl font-semibold space-x-2 w-full justify-start md:justify-center'>
-        <p>Player profile:</p>
+      <div className='inline-flex text-3xl font-semibold w-full justify-start md:justify-center'>
+        {/* <p>Player profile:</p> */}
         <p className='text-transparent bg-clip-text bg-gradient-to-tr to-[#0acffe] from-[#495aff] select-none'>
           {username}
         </p>
