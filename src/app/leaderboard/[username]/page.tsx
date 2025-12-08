@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/server'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
+import { removeYearFromEventName } from '@/lib/utils'
 
 const Chart = dynamic(() => import('../../../components/chart'), {
   ssr: false,
@@ -47,7 +48,7 @@ export default async function PlayerProfile({
     .filter((entry) => entry.event?.rating_event)
     .map((entry) => {
       return {
-        name: entry.event?.name ?? 'unknown',
+        name: removeYearFromEventName(entry.event?.name ?? null),
         date: entry.event?.start_date?.toLocaleString() ?? 'unknown',
         rating: isOrdinal(entry.ordinal) ? Math.round(entry.ordinal) : 1200,
       }
@@ -79,7 +80,19 @@ export default async function PlayerProfile({
             </p>
             <div>
               {event_participation.map((entry) => {
-                return <p key={entry.event?.id}>{entry.event?.name}</p>
+                const eventName = entry.event?.name
+                const eventId = entry.event?.id
+                if (!eventName || !eventId) return null
+                return (
+                  <p key={eventId}>
+                    <Link
+                      href={`/tournament/${eventId}`}
+                      className='text-primary hover:underline'
+                    >
+                      {removeYearFromEventName(eventName)}
+                    </Link>
+                  </p>
+                )
               })}
             </div>
           </div>
