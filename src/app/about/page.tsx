@@ -1,6 +1,9 @@
-import Image from 'next/image'
+import Link from 'next/link'
+import { removeYearFromEventName } from '@/lib/utils'
+import { getEventsByYear, sortEventsByDate, type Event } from '@/lib/events'
 
-export default function About() {
+export default async function About() {
+  const { eventsByYear, sortedYears } = await getEventsByYear()
   return (
     <div className='max-w-5xl mx-auto shadow-lg -mt-20 z-10 bg-background rounded-md p-6'>
       <div className='space-y-6 max-w-4xl'>
@@ -82,48 +85,32 @@ export default function About() {
             those efforts the following events have been fully recorded and
             processed into the current tournament rating system:
           </p>
-          <div className='space-y-2'>
-            <p>2020</p>
-            <ul>
-              <li>First DE Tournament</li>
-              <li>Second DE Tournament</li>
-            </ul>
-          </div>
-          <div className='space-y-2'>
-            <p>2021</p>
-            <ul>
-              <li>Draft Kings Standard</li>
-              <li>Draft Kings Swiss</li>
-              <li>May Classic</li>
-              <li>Winter Cup</li>
-            </ul>
-          </div>
-          <div className='space-y-2'>
-            <p>2022</p>
-            <ul>
-              <li>February Draft</li>
-              <li>May Mashup</li>
-              <li>September Scenarios</li>
-              <li>Factory Rush</li>
-            </ul>
-          </div>
-          <div className='space-y-2'>
-            <p>2023</p>
-            <ul>
-              <li>New Years Tournament</li>
-              <li>Factory Rush</li>
-            </ul>
-          </div>
-          <div className='space-y-2'>
-            <p>2024</p>
-            <ul>
-              <li>IceBowl</li>
-              <li>Spring Autobidder Draft</li>
-              <li>
-                <i>Factory Rush (Upcoming)</i>
-              </li>
-            </ul>
-          </div>
+          {sortedYears.length > 0 ? (
+            sortedYears.map((year: number) => {
+              const yearEvents = sortEventsByDate(eventsByYear.get(year) || [])
+              return (
+                <div key={year} className='space-y-2'>
+                  <p className='font-semibold'>{year}</p>
+                  <ul className='list-disc list-inside space-y-1'>
+                    {yearEvents.map((event: Event) => (
+                      <li key={event.id}>
+                        <Link
+                          href={`/tournament/${event.id}`}
+                          className='text-primary hover:underline'
+                        >
+                          {removeYearFromEventName(event.name)}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )
+            })
+          ) : (
+            <p className='text-muted-foreground'>
+              No rating events found in the database.
+            </p>
+          )}
         </div>
 
         <div className='space-y-4'>
