@@ -103,7 +103,7 @@ export default async function TournamentPage({
   }
 
   // Get all participation data for these games
-  const gameIds = games.map((g) => g.id)
+  const gameIds = games.map((g: { id: number }) => g.id)
 
   // Supabase has limits on .in() queries (typically 100-1000 items)
   // Batch the queries if we have too many game IDs to avoid hitting limits
@@ -202,7 +202,7 @@ export default async function TournamentPage({
     string,
     { with: number[]; without: number[] }
   >()
-  games.forEach((g) => {
+  games.forEach((g: { id: number; name: string | null }) => {
     const name = g.name || 'unnamed'
     if (!gamesByNameWithParticipation.has(name)) {
       gamesByNameWithParticipation.set(name, { with: [], without: [] })

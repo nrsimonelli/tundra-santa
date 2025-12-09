@@ -24,36 +24,43 @@ export async function getEventsByYear(): Promise<{
   // Group events by year based on their start_date
   const eventsByYear: EventsByYear = new Map()
 
-  events?.forEach((event) => {
-    // Skip events without a start_date (can't determine year)
-    if (!event.start_date) {
-      return
-    }
-    // Extract year from start_date to categorize the event
-    // Use UTC methods to avoid timezone conversion issues
-    try {
-      const date = new Date(event.start_date)
-      // Check if date is valid
-      if (isNaN(date.getTime())) {
+  events?.forEach(
+    (event: {
+      id: number
+      name: string | null
+      start_date: string | null
+      rating_event: boolean | null
+    }) => {
+      // Skip events without a start_date (can't determine year)
+      if (!event.start_date) {
         return
       }
-      // Use UTC methods to get the year from the UTC date, not local timezone
-      const year = date.getUTCFullYear()
-      if (!eventsByYear.has(year)) {
-        eventsByYear.set(year, [])
+      // Extract year from start_date to categorize the event
+      // Use UTC methods to avoid timezone conversion issues
+      try {
+        const date = new Date(event.start_date)
+        // Check if date is valid
+        if (isNaN(date.getTime())) {
+          return
+        }
+        // Use UTC methods to get the year from the UTC date, not local timezone
+        const year = date.getUTCFullYear()
+        if (!eventsByYear.has(year)) {
+          eventsByYear.set(year, [])
+        }
+        eventsByYear.get(year)!.push({
+          id: event.id,
+          name: event.name,
+          start_date: event.start_date,
+        })
+      } catch (error) {
+        console.error(
+          `Error parsing date for event ${event.id} (${event.name}): ${event.start_date}`,
+          error
+        )
       }
-      eventsByYear.get(year)!.push({
-        id: event.id,
-        name: event.name,
-        start_date: event.start_date,
-      })
-    } catch (error) {
-      console.error(
-        `Error parsing date for event ${event.id} (${event.name}): ${event.start_date}`,
-        error
-      )
     }
-  })
+  )
 
   // Sort years in descending order
   const sortedYears = Array.from(eventsByYear.keys()).sort((a, b) => b - a)

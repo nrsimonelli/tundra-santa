@@ -103,8 +103,8 @@ async function getFinalistsForEvent(
   const playerIds = Array.from(
     new Set(
       participation
-        .map((p) => p.player)
-        .filter((id): id is number => id !== null)
+        .map((p: { player: number | null }) => p.player)
+        .filter((id: number | null): id is number => id !== null)
     )
   )
 
@@ -119,7 +119,7 @@ async function getFinalistsForEvent(
   if (!players || players.length === 0) return []
 
   // Create finalists list
-  return players.map((p) => ({
+  return players.map((p: { id: number; username: string }) => ({
     id: p.id,
     username: p.username,
   }))
@@ -138,7 +138,7 @@ async function getPlayerCountsByEvent(
     .in('event', eventIds)
 
   const playerCounts = new Map<number, Set<number>>()
-  participationData?.forEach((p) => {
+  participationData?.forEach((p: { event: number; player: number }) => {
     if (!playerCounts.has(p.event)) {
       playerCounts.set(p.event, new Set())
     }
@@ -172,7 +172,7 @@ async function getWinnerNames(
       .select('id, username')
       .in('id', winnerIds)
 
-    winners?.forEach((w) => {
+    winners?.forEach((w: { id: number; username: string }) => {
       winnerMap.set(w.id, w.username)
     })
   }
@@ -206,7 +206,9 @@ export async function getAllTournamentsWithDetails(): Promise<{
           eventsError instanceof Error
             ? eventsError
             : new Error(
-                eventsError.message || String(eventsError) || 'Unknown error'
+                (eventsError as { message?: string }).message ||
+                  String(eventsError) ||
+                  'Unknown error'
               ),
         lastUpdated: null,
       }
@@ -226,7 +228,7 @@ export async function getAllTournamentsWithDetails(): Promise<{
 
     const lastUpdated = mostRecentGame?.created_at || null
 
-    const eventIds = events.map((e) => e.id)
+    const eventIds = events.map((e: TournamentEvent) => e.id)
 
     // Get player counts, winners, and finalists in parallel
     const [playerCountMap, winnerMap] = await Promise.all([
@@ -236,14 +238,17 @@ export async function getAllTournamentsWithDetails(): Promise<{
 
     // Get finalists for events with more than 2 players
     const eventsWithMultiplePlayers = events.filter(
-      (e) => e.num_players_per_game && e.num_players_per_game > 2
+      (e: TournamentEvent) =>
+        e.num_players_per_game && e.num_players_per_game > 2
     )
 
     // Fetch all finalists in parallel for better performance
-    const finalistsPromises = eventsWithMultiplePlayers.map(async (event) => {
-      const finalists = await getFinalistsForEvent(supabase, event.id)
-      return { eventId: event.id, finalists }
-    })
+    const finalistsPromises = eventsWithMultiplePlayers.map(
+      async (event: TournamentEvent) => {
+        const finalists = await getFinalistsForEvent(supabase, event.id)
+        return { eventId: event.id, finalists }
+      }
+    )
 
     const finalistsResults = await Promise.all(finalistsPromises)
     const finalistsByEvent = new Map<number, Finalist[]>()
@@ -254,19 +259,21 @@ export async function getAllTournamentsWithDetails(): Promise<{
     })
 
     // Combine all data
-    const tournaments: TournamentWithDetails[] = events.map((event) => ({
-      id: event.id,
-      name: event.name,
-      start_date: event.start_date,
-      num_players_per_game: event.num_players_per_game,
-      bid: event.bid,
-      draft: event.draft,
-      rating_event: event.rating_event,
-      winner: event.winner,
-      winner_name: event.winner ? winnerMap.get(event.winner) || null : null,
-      player_count: playerCountMap.get(event.id) || 0,
-      finalists: finalistsByEvent.get(event.id) || [],
-    }))
+    const tournaments: TournamentWithDetails[] = events.map(
+      (event: TournamentEvent) => ({
+        id: event.id,
+        name: event.name,
+        start_date: event.start_date,
+        num_players_per_game: event.num_players_per_game,
+        bid: event.bid,
+        draft: event.draft,
+        rating_event: event.rating_event,
+        winner: event.winner,
+        winner_name: event.winner ? winnerMap.get(event.winner) || null : null,
+        player_count: playerCountMap.get(event.id) || 0,
+        finalists: finalistsByEvent.get(event.id) || [],
+      })
+    )
 
     return { tournaments, error: null, lastUpdated }
   } catch (error) {

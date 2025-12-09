@@ -29,7 +29,10 @@ export default async function Leaderboard() {
       </TableHeader>
       <TableBody>
         {players?.map((player, index) => {
-          const ordinal = (player.current_rating as { ordinal: number }).ordinal
+          const currentRating = player.current_rating as {
+            ordinal?: number
+          } | null
+          const ordinal = currentRating?.ordinal
           return (
             <ClickableTableRow
               key={player.id}

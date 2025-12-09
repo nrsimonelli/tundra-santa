@@ -26,10 +26,10 @@ export function ClickableTableRow({
       />
       {React.Children.map(children, (child) => {
         if (React.isValidElement(child) && child.type === TableCell) {
-          return React.cloneElement(child, {
-            ...child.props,
-            className: cn('relative z-10', child.props.className),
-          } as React.HTMLAttributes<HTMLTableCellElement>)
+          const cellChild = child as React.ReactElement<React.HTMLAttributes<HTMLTableCellElement> & { className?: string }>
+          return React.cloneElement(cellChild, {
+            className: cn('relative z-10', cellChild.props.className),
+          })
         }
         return child
       })}

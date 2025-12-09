@@ -35,9 +35,12 @@ export default async function PlayerProfile({
   }
 
   const { ordinal: current_rating, event_participation, username } = data[0]
-  const wins = event_participation.reduce((acc, event) => {
-    return acc + (event.games_won ?? 0)
-  }, 0)
+  const wins = event_participation.reduce(
+    (acc: number, event: { games_won: number | null }) => {
+      return acc + (event.games_won ?? 0)
+    },
+    0
+  )
 
   const isOrdinal = (value: any): value is number => {
     return typeof value === 'number'
@@ -74,8 +77,8 @@ export default async function PlayerProfile({
   }
 
   const chartData = event_participation
-    .filter((entry) => isRatingEvent(entry))
-    .map((entry) => {
+    .filter((entry: (typeof event_participation)[0]) => isRatingEvent(entry))
+    .map((entry: (typeof event_participation)[0]) => {
       return {
         name: removeYearFromEventName(entry.event?.name ?? null),
         date: entry.event?.start_date?.toLocaleString() ?? 'unknown',
