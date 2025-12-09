@@ -13,7 +13,7 @@ export default async function TournamentPage({
 }: {
   params: { id: string }
 }) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const eventId = parseInt(params.id, 10)
 
   if (isNaN(eventId)) {
@@ -307,7 +307,7 @@ export default async function TournamentPage({
 
 // Helper function to fetch winner name
 async function getWinnerName(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   winnerId: number | null
 ): Promise<string | null> {
   if (!winnerId) return null

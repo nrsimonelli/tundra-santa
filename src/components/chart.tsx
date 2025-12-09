@@ -9,7 +9,7 @@ import {
   Tooltip,
 } from 'recharts'
 
-export default function Chart({
+export function Chart({
   data,
 }: {
   data: { name: string; date: string; rating: number }[]

@@ -11,7 +11,7 @@ import { createClient } from '@/lib/supabase/server'
 import { ClickableTableRow } from '@/components/clickable-table-row'
 
 export default async function Leaderboard() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: players } = await supabase
     .from('players')
     .select()

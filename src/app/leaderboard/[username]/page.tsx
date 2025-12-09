@@ -1,18 +1,14 @@
 import { createClient } from '@/lib/supabase/server'
-import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { removeYearFromEventName } from '@/lib/utils'
-
-const Chart = dynamic(() => import('../../../components/chart'), {
-  ssr: false,
-})
+import { Chart } from '@/components/chart'
 
 export default async function PlayerProfile({
   params,
 }: {
   params: { username: string }
 }) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data } = await supabase
     .from('players')

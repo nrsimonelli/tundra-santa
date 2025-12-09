@@ -12,7 +12,7 @@ export async function getEventsByYear(): Promise<{
   eventsByYear: EventsByYear
   sortedYears: number[]
 }> {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   // Fetch all rating events (events that contribute to tournament rating)
   const { data: events } = await supabase
