@@ -50,7 +50,9 @@ export default function TournamentTable({
               Tournament
             </TableHead>
             <TableHead className='text-primary w-fit'>Date</TableHead>
-            <TableHead className='text-primary w-auto'>Details</TableHead>
+            <TableHead className='text-primary w-auto hidden md:table-cell'>
+              Details
+            </TableHead>
             <TableHead className='text-primary w-[420px] max-w-[420px]'>
               <div className='flex items-center justify-between'>
                 <span>Finalists</span>
@@ -88,7 +90,7 @@ export default function TournamentTable({
               <TableCell className='w-fit'>
                 {getNumericDate(tournament.start_date) || '—'}
               </TableCell>
-              <TableCell className='w-auto'>
+              <TableCell className='w-auto hidden md:table-cell'>
                 <div className='flex items-center gap-4'>
                   <div className='flex items-center gap-1.5'>
                     <User className='h-4 w-4 text-muted-foreground' />
