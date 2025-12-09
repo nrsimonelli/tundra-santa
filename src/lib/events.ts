@@ -14,10 +14,11 @@ export async function getEventsByYear(): Promise<{
   eventsByYear: EventsByYear
   sortedYears: number[]
 }> {
-  return unstable_cache(
-    async () => {
-      const supabase = await createClient()
+  // Create client outside cached function to avoid accessing cookies() inside cache
+  const supabase = await createClient()
 
+  const cached = await unstable_cache(
+    async () => {
       // Fetch all rating events (events that contribute to tournament rating)
       const { data: events } = await supabase
         .from('events')
@@ -26,7 +27,8 @@ export async function getEventsByYear(): Promise<{
         .order('start_date', { ascending: false })
 
       // Group events by year based on their start_date
-      const eventsByYear: EventsByYear = new Map()
+      // Use plain object for cache serialization, convert to Map after retrieval
+      const eventsByYearObj: Record<number, Event[]> = {}
 
       events?.forEach(
         (event: {
@@ -49,10 +51,10 @@ export async function getEventsByYear(): Promise<{
             }
             // Use UTC methods to get the year from the UTC date, not local timezone
             const year = date.getUTCFullYear()
-            if (!eventsByYear.has(year)) {
-              eventsByYear.set(year, [])
+            if (!eventsByYearObj[year]) {
+              eventsByYearObj[year] = []
             }
-            eventsByYear.get(year)!.push({
+            eventsByYearObj[year].push({
               id: event.id,
               name: event.name,
               start_date: event.start_date,
@@ -67,9 +69,11 @@ export async function getEventsByYear(): Promise<{
       )
 
       // Sort years in descending order
-      const sortedYears = Array.from(eventsByYear.keys()).sort((a, b) => b - a)
+      const sortedYears = Object.keys(eventsByYearObj)
+        .map(Number)
+        .sort((a, b) => b - a)
 
-      return { eventsByYear, sortedYears }
+      return { eventsByYearObj, sortedYears }
     },
     ['events-by-year'],
     {
@@ -77,6 +81,16 @@ export async function getEventsByYear(): Promise<{
       tags: ['events'],
     }
   )()
+
+  // Convert plain object back to Map for return type compatibility
+  const eventsByYear: EventsByYear = new Map(
+    Object.entries(cached.eventsByYearObj).map(([year, events]) => [
+      Number(year),
+      events,
+    ])
+  )
+
+  return { eventsByYear, sortedYears: cached.sortedYears }
 }
 
 export function sortEventsByDate(events: Event[]): Event[] {

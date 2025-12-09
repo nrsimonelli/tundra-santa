@@ -1,6 +1,9 @@
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
+// This page is completely static - no data fetching
+export const dynamic = 'force-static'
+
 export default function Home() {
   return (
     <div className='flex gap-4 flex-col sm:flex-row items-center justify-center py-24'>

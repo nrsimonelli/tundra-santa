@@ -9,10 +9,11 @@ import {
 } from '@/components/ui/table'
 import { getCachedPlayers } from '@/lib/supabase/cached-queries'
 import { ClickableTableRow } from '@/components/clickable-table-row'
+import { revalidate as REVALIDATE } from '@/lib/cache-config'
 
 // Next.js requires each route segment to export its own `revalidate` constant.
-// We re-export the shared value here so Next.js can find it in this route file.
-export { revalidate } from '@/lib/cache-config'
+// We import the shared value and assign it to a local constant so Next.js can statically analyze it.
+export const revalidate = REVALIDATE
 
 export default async function Leaderboard() {
   const players = await getCachedPlayers()

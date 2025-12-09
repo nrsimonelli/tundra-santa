@@ -3,9 +3,11 @@ import { createClient } from './server'
 import { revalidate } from '../cache-config'
 
 export async function getCachedPlayers() {
+  // Create client outside cached function to avoid accessing cookies() inside cache
+  const supabase = await createClient()
+
   return unstable_cache(
     async () => {
-      const supabase = await createClient()
       const { data } = await supabase
         .from('players')
         .select()
@@ -21,9 +23,11 @@ export async function getCachedPlayers() {
 }
 
 export async function getCachedPlayer(username: string) {
+  // Create client outside cached function to avoid accessing cookies() inside cache
+  const supabase = await createClient()
+
   return unstable_cache(
     async () => {
-      const supabase = await createClient()
       const { data } = await supabase
         .from('players')
         .select(
@@ -48,9 +52,11 @@ export async function getCachedPlayer(username: string) {
 }
 
 export async function getCachedEvent(eventId: number) {
+  // Create client outside cached function to avoid accessing cookies() inside cache
+  const supabase = await createClient()
+
   return unstable_cache(
     async () => {
-      const supabase = await createClient()
       const { data } = await supabase
         .from('events')
         .select('id, name, start_date, winner, num_players_per_game')

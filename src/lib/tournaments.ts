@@ -338,10 +338,11 @@ export async function getAllTournamentsWithDetails(): Promise<{
   error: Error | null
   lastUpdated: string | null
 }> {
+  // Create client outside cached function to avoid accessing cookies() inside cache
+  const supabase = await createClient()
+
   return unstable_cache(
     async () => {
-      const supabase = await createClient()
-
       try {
         // Fetch all events
         const { data: events, error: eventsError } = await supabase
