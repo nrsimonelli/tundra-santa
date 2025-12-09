@@ -22,12 +22,8 @@ export function ClickableTableRow({
   }
 
   return (
-    <TableRow
-      onClick={handleClick}
-      className={cn('cursor-pointer', className)}
-    >
+    <TableRow onClick={handleClick} className={cn('cursor-pointer', className)}>
       {children}
     </TableRow>
   )
 }
-
