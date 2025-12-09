@@ -1,6 +1,5 @@
-import Link from 'next/link'
-import { removeYearFromEventName } from '@/lib/utils'
 import { getEventsByYear, sortEventsByDate, type Event } from '@/lib/events'
+import EventLink from '@/components/event-link'
 
 export default async function About() {
   const { eventsByYear, sortedYears } = await getEventsByYear()
@@ -94,12 +93,11 @@ export default async function About() {
                   <ul className='list-disc list-inside space-y-1'>
                     {yearEvents.map((event: Event) => (
                       <li key={event.id}>
-                        <Link
-                          href={`/tournament/${event.id}`}
+                        <EventLink
+                          eventId={event.id}
+                          eventName={event.name}
                           className='text-primary hover:underline'
-                        >
-                          {removeYearFromEventName(event.name)}
-                        </Link>
+                        />
                       </li>
                     ))}
                   </ul>

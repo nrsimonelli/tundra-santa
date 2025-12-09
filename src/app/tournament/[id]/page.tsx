@@ -11,10 +11,11 @@ import { removeYearFromEventName } from '@/lib/utils'
 export default async function TournamentPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }> | { id: string }
 }) {
   const supabase = await createClient()
-  const eventId = parseInt(params.id, 10)
+  const resolvedParams = await Promise.resolve(params)
+  const eventId = parseInt(resolvedParams.id, 10)
 
   if (isNaN(eventId)) {
     return (

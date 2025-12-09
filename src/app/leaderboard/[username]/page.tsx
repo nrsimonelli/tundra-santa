@@ -2,13 +2,16 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { removeYearFromEventName } from '@/lib/utils'
 import { Chart } from '@/components/chart'
+import { sortByEventDate, getMostRecentEvent } from '@/lib/events'
+import EventLink from '@/components/event-link'
 
 export default async function PlayerProfile({
   params,
 }: {
-  params: { username: string }
+  params: Promise<{ username: string }> | { username: string }
 }) {
   const supabase = await createClient()
+  const resolvedParams = await Promise.resolve(params)
 
   const { data } = await supabase
     .from('players')
@@ -24,7 +27,7 @@ export default async function PlayerProfile({
     )
     `
     )
-    .eq('username', decodeURIComponent(params.username))
+    .eq('username', decodeURIComponent(resolvedParams.username))
 
   if (!data || data[0] === null) {
     return <div>Player not found</div>
@@ -43,26 +46,12 @@ export default async function PlayerProfile({
   }
 
   // Find most recent event (newest first)
-  const mostRecentEvent = [...event_participation].sort((a, b) => {
-    const dateA = a.event?.start_date
-      ? new Date(a.event.start_date).getTime()
-      : 0
-    const dateB = b.event?.start_date
-      ? new Date(b.event.start_date).getTime()
-      : 0
-    return dateB - dateA
-  })[0]?.event
+  const mostRecentEvent = getMostRecentEvent(event_participation) as
+    | (typeof event_participation)[0]['event']
+    | null
 
   // Sort events by date (oldest first) for display
-  const sortedEvents = [...event_participation].sort((a, b) => {
-    const dateA = a.event?.start_date
-      ? new Date(a.event.start_date).getTime()
-      : 0
-    const dateB = b.event?.start_date
-      ? new Date(b.event.start_date).getTime()
-      : 0
-    return dateA - dateB
-  })
+  const sortedEvents = sortByEventDate(event_participation)
 
   // Helper to check if event contributes to rating
   const isRatingEvent = (entry: (typeof event_participation)[0]) => {
@@ -101,12 +90,11 @@ export default async function PlayerProfile({
             {mostRecentEvent && (
               <p className=''>
                 Most recent event:{' '}
-                <Link
-                  href={`/tournament/${mostRecentEvent.id}`}
+                <EventLink
+                  eventId={mostRecentEvent.id}
+                  eventName={mostRecentEvent.name}
                   className='hover:underline cursor-pointer'
-                >
-                  {removeYearFromEventName(mostRecentEvent.name)}
-                </Link>
+                />
               </p>
             )}
           </div>
@@ -124,13 +112,14 @@ export default async function PlayerProfile({
               const isRating = isRatingEvent(entry)
               return (
                 <p key={eventId}>
-                  <Link
-                    href={`/tournament/${eventId}`}
+                  <EventLink
+                    eventId={eventId}
+                    eventName={eventName}
                     className='hover:underline cursor-pointer'
                   >
                     {removeYearFromEventName(eventName)}
                     {!isRating && ' *'}
-                  </Link>
+                  </EventLink>
                 </p>
               )
             })}

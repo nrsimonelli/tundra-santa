@@ -76,3 +76,81 @@ export function sortEventsByDate(events: Event[]): Event[] {
     return new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
   })
 }
+
+export function sortEventsByDateDescending(events: Event[]): Event[] {
+  return events.sort((a, b) => {
+    // Sort by start_date (descending - newest first)
+    if (!a.start_date) return 1
+    if (!b.start_date) return -1
+    return new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
+  })
+}
+
+type EventWithNestedEvent = {
+  event?: { start_date: string | null } | null
+}
+
+type SortableByEventDate<T> = T extends { start_date: string | null }
+  ? T
+  : T extends EventWithNestedEvent
+  ? T
+  : never
+
+function getEventStartDate(item: Event | EventWithNestedEvent): string | null {
+  if ('start_date' in item) {
+    return item.start_date
+  }
+  if ('event' in item && item.event) {
+    return item.event.start_date
+  }
+  return null
+}
+
+export function sortByEventDate<T extends Event | EventWithNestedEvent>(
+  items: T[]
+): T[] {
+  return [...items].sort((a, b) => {
+    const dateA = getEventStartDate(a)
+    const dateB = getEventStartDate(b)
+    if (!dateA) return 1
+    if (!dateB) return -1
+    return new Date(dateA).getTime() - new Date(dateB).getTime()
+  })
+}
+
+export function sortByEventDateDescending<
+  T extends Event | EventWithNestedEvent
+>(items: T[]): T[] {
+  return [...items].sort((a, b) => {
+    const dateA = getEventStartDate(a)
+    const dateB = getEventStartDate(b)
+    if (!dateA) return 1
+    if (!dateB) return -1
+    return new Date(dateB).getTime() - new Date(dateA).getTime()
+  })
+}
+
+export function getMostRecentEvent<T extends Event | EventWithNestedEvent>(
+  items: T[]
+):
+  | (T extends Event ? T : T extends { event?: infer E | null } ? E : never)
+  | null {
+  if (items.length === 0) return null
+
+  const sorted = sortByEventDateDescending(items)
+  const mostRecent = sorted[0]
+
+  if (!mostRecent) return null
+
+  // If it's an Event, return it directly
+  if ('start_date' in mostRecent && 'id' in mostRecent) {
+    return mostRecent as any
+  }
+
+  // If it has a nested event property, return that
+  if ('event' in mostRecent && mostRecent.event) {
+    return mostRecent.event as any
+  }
+
+  return null
+}
