@@ -8,7 +8,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { createClient } from '@/lib/supabase/server'
-import Link from 'next/link'
+import { ClickableTableRow } from '@/components/clickable-table-row'
 
 export default async function Leaderboard() {
   const supabase = createClient()
@@ -31,19 +31,16 @@ export default async function Leaderboard() {
         {players?.map((player, index) => {
           const ordinal = (player.current_rating as { ordinal: number }).ordinal
           return (
-            <TableRow key={player.id}>
+            <ClickableTableRow
+              key={player.id}
+              href={`/leaderboard/${encodeURIComponent(player.username)}`}
+            >
               <TableCell>{index + 1}</TableCell>
-              <TableCell>
-                <Link
-                  href={`/leaderboard/${encodeURIComponent(player.username)}`}
-                >
-                  {player.username}
-                </Link>
-              </TableCell>
+              <TableCell>{player.username}</TableCell>
               <TableCell>
                 {ordinal != null ? Math.round(ordinal) : 'N/A'}
               </TableCell>
-            </TableRow>
+            </ClickableTableRow>
           )
         })}
       </TableBody>

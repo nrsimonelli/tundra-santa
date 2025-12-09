@@ -43,8 +43,8 @@ export default async function PlayerProfile({
     return typeof value === 'number'
   }
 
-  // Sort events by date (most recent first)
-  const sortedEvents = [...event_participation].sort((a, b) => {
+  // Find most recent event (newest first)
+  const mostRecentEvent = [...event_participation].sort((a, b) => {
     const dateA = a.event?.start_date
       ? new Date(a.event.start_date).getTime()
       : 0
@@ -52,9 +52,18 @@ export default async function PlayerProfile({
       ? new Date(b.event.start_date).getTime()
       : 0
     return dateB - dateA
-  })
+  })[0]?.event
 
-  const mostRecentEvent = sortedEvents[0]?.event
+  // Sort events by date (oldest first) for display
+  const sortedEvents = [...event_participation].sort((a, b) => {
+    const dateA = a.event?.start_date
+      ? new Date(a.event.start_date).getTime()
+      : 0
+    const dateB = b.event?.start_date
+      ? new Date(b.event.start_date).getTime()
+      : 0
+    return dateA - dateB
+  })
 
   // Helper to check if event contributes to rating
   const isRatingEvent = (entry: (typeof event_participation)[0]) => {
@@ -76,7 +85,7 @@ export default async function PlayerProfile({
 
   return (
     <div className='flex flex-col items-start md:flex-row justify-start flex-wrap gap-8'>
-      <div className='inline-flex text-3xl font-semibold space-x-2 w-full justify-start md:justify-center'>
+      <div className='inline-flex text-3xl font-semibold space-x-2 w-full justify-start'>
         <p>Player profile:</p>
         <p className='text-transparent bg-clip-text bg-gradient-to-tr to-[#0acffe] from-[#495aff] select-none'>
           {username}
@@ -132,17 +141,17 @@ export default async function PlayerProfile({
 
       {chartData.length > 1 && (
         <div className='flex flex-col space-y-4 min-w-[300px] w-full flex-1 order-2 md:order-2'>
-          <p className='md:mx-auto mx-0 text-2xl font-semibold text-foreground'>
+          <p className='text-2xl font-semibold text-foreground md:text-center'>
             Tournament Rating by Event
           </p>
           <Chart data={chartData} />
           <Link
-            className='mx-auto py-2 font-semibold text-primary'
+            className='py-2 font-semibold text-primary md:mx-auto'
             href='/leaderboard'
           >
             Back to leaderboard
           </Link>
-          <p className='text-sm text-muted-foreground text-center max-w-md mx-auto'>
+          <p className='text-sm text-muted-foreground text-left max-w-md md:text-center md:mx-auto'>
             * Tournament Rating is calculated from three & four player events.
             Two player events, while still official tournament events, are not a
             part of the rating system at this time.
