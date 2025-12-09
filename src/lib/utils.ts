@@ -1,37 +1,57 @@
-import { type ClassValue, clsx } from 'clsx'
+import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-/**
- * Formats a date string to a readable format (e.g., "Jan 15, 2024")
- */
-export function getFormattedDate(date: string | null): string | null {
-  if (!date) return null
-  return new Date(date).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
+export function getFormattedDate(dateString: string | null): string {
+  if (!dateString) return ''
+  try {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
+  } catch {
+    return dateString
+  }
+}
+
+export function getNumericDate(dateString: string | null): string {
+  if (!dateString) return ''
+  try {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+  } catch {
+    return dateString
+  }
 }
 
 export function removeYearFromEventName(name: string | null): string {
-  if (!name) return 'Unnamed Event'
+  if (!name) return ''
 
-  // Remove years in various formats:
-  // - "Event 2023" or "Event 2023" at the end
-  // - "Event (2023)" or "Event (2023)" with parentheses
-  // - "2023 Event" or "2023 Event" at the start
-  // - "'23 Event" or "Event '23" with apostrophe
-  // - "Event - 2023" or "Event - 2023" with dash
-  // Years from 2000-2099
-  return name
-    .replace(/\s*\(?\s*(20\d{2})\s*\)?\s*/g, ' ') // Remove (2023) or 2023 in parentheses
-    .replace(/\s*(20\d{2})\s*/g, ' ') // Remove standalone 20XX years
-    .replace(/\s*[''](\d{2})\s*/g, ' ') // Remove '23 or '23 formats
-    .replace(/\s*-\s*(20\d{2})\s*/g, ' ') // Remove - 2023 formats
-    .replace(/\s+/g, ' ') // Normalize multiple spaces
-    .trim()
+  return (
+    name
+      // Remove year in parentheses anywhere (most common pattern) - do this first
+      .replace(/\s*\((201[6-9]|20[2-9]\d)\)\s*/g, ' ')
+      // Remove year at start with optional dash
+      .replace(/^(201[6-9]|20[2-9]\d)\s*[-–—]?\s*/g, '')
+      // Remove year at end with dash/comma separator (including the separator)
+      .replace(/\s*[-–—,]\s*(201[6-9]|20[2-9]\d)\s*$/g, '')
+      // Remove year at end with space
+      .replace(/\s+(201[6-9]|20[2-9]\d)\s*$/g, '')
+      // Remove year at start with space
+      .replace(/^(201[6-9]|20[2-9]\d)\s+/g, '')
+      // Remove year in middle with space (e.g., "Tournament 2024 Finals")
+      .replace(/\s+(201[6-9]|20[2-9]\d)\s+/g, ' ')
+      // Clean up multiple spaces
+      .replace(/\s+/g, ' ')
+      .trim()
+  )
 }

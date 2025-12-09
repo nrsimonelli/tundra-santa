@@ -1,7 +1,7 @@
 'use client'
 
-import React from 'react'
-import Link from 'next/link'
+import React, { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
 
@@ -16,14 +16,38 @@ export function ClickableTableRow({
   children,
   className,
 }: ClickableTableRowProps) {
+  const router = useRouter()
+
+  // Prefetch the route for better performance
+  useEffect(() => {
+    router.prefetch(href)
+  }, [href, router])
+
+  const handleClick = (e: React.MouseEvent<HTMLTableRowElement>) => {
+    // Allow clicking on links/buttons inside the row
+    const target = e.target as HTMLElement
+    if (target.closest('a, button')) {
+      return
+    }
+    router.push(href)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTableRowElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      router.push(href)
+    }
+  }
+
   return (
-    <TableRow className={cn('cursor-pointer group relative', className)}>
-      <Link
-        href={href}
-        prefetch={true}
-        className='absolute inset-0 z-0'
-        aria-label='Navigate to details'
-      />
+    <TableRow
+      className={cn('cursor-pointer group relative', className)}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      role="link"
+      tabIndex={0}
+      aria-label={`Navigate to ${href}`}
+    >
       {React.Children.map(children, (child) => {
         if (React.isValidElement(child) && child.type === TableCell) {
           const cellChild = child as React.ReactElement<React.HTMLAttributes<HTMLTableCellElement> & { className?: string }>
