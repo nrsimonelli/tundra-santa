@@ -5,6 +5,26 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+/**
+ * Extracts the year from a date string
+ */
+export function getYear(date: string | null): string | null {
+  if (!date) return null
+  return new Date(date).getFullYear().toString()
+}
+
+/**
+ * Formats a date string to a readable format (e.g., "Jan 15, 2024")
+ */
+export function getFormattedDate(date: string | null): string | null {
+  if (!date) return null
+  return new Date(date).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
 export function removeYearFromEventName(name: string | null): string {
   if (!name) return 'Unnamed Event'
 

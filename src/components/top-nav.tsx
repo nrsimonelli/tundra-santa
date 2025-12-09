@@ -10,6 +10,7 @@ export const TopNav = () => {
         </Link>
         <div className='inline-flex space-x-4'>
           <Link href={'/about'}>About</Link>
+          <Link href={'/tournament'}>Tournaments</Link>
           <Link href={'/leaderboard'}>Leaderboard</Link>
           {/* <p>discord?</p> */}
         </div>

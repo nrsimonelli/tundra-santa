@@ -40,7 +40,9 @@ export default async function Leaderboard() {
                   {player.username}
                 </Link>
               </TableCell>
-              <TableCell>{Math.round(ordinal)}</TableCell>
+              <TableCell>
+                {ordinal != null ? Math.round(ordinal) : 'N/A'}
+              </TableCell>
             </TableRow>
           )
         })}
