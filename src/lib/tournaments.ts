@@ -195,7 +195,14 @@ export async function getAllTournamentsWithDetails(): Promise<{
       .order('start_date', { ascending: false })
 
     if (eventsError) {
-      return { tournaments: [], error: eventsError, lastUpdated: null }
+      return {
+        tournaments: [],
+        error:
+          eventsError instanceof Error
+            ? eventsError
+            : new Error(String(eventsError)),
+        lastUpdated: null,
+      }
     }
 
     if (!events || events.length === 0) {
@@ -225,13 +232,19 @@ export async function getAllTournamentsWithDetails(): Promise<{
       (e) => e.num_players_per_game && e.num_players_per_game > 2
     )
 
-    const finalistsByEvent = new Map<number, Finalist[]>()
-    for (const event of eventsWithMultiplePlayers) {
+    // Fetch all finalists in parallel for better performance
+    const finalistsPromises = eventsWithMultiplePlayers.map(async (event) => {
       const finalists = await getFinalistsForEvent(supabase, event.id)
+      return { eventId: event.id, finalists }
+    })
+
+    const finalistsResults = await Promise.all(finalistsPromises)
+    const finalistsByEvent = new Map<number, Finalist[]>()
+    finalistsResults.forEach(({ eventId, finalists }) => {
       if (finalists.length > 0) {
-        finalistsByEvent.set(event.id, finalists)
+        finalistsByEvent.set(eventId, finalists)
       }
-    }
+    })
 
     // Combine all data
     const tournaments: TournamentWithDetails[] = events.map((event) => ({
@@ -257,4 +270,3 @@ export async function getAllTournamentsWithDetails(): Promise<{
     }
   }
 }
-
