@@ -16,14 +16,10 @@ export type TournamentWithDetails = {
   winner: number | null
   winner_name: string | null
   player_count: number
+  games_count: number
   finalists: Finalist[]
 }
 
-/**
- * Internal type for events with full tournament details.
- * This is more comprehensive than the exported Event type in events.ts
- * which only includes basic fields (id, name, start_date).
- */
 type TournamentEvent = {
   id: number
   name: string | null
@@ -35,9 +31,6 @@ type TournamentEvent = {
   winner: number | null
 }
 
-/**
- * Checks if a game name matches common finals patterns
- */
 function isFinalsGame(gameName: string | null): boolean {
   if (!gameName) return false
   const nameLower = gameName.toLowerCase()
@@ -48,11 +41,8 @@ function isFinalsGame(gameName: string | null): boolean {
   )
 }
 
-/**
- * Finds the finals game for an event by checking the last 2 games
- */
 async function findFinalsGame(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   eventId: number
 ): Promise<{ id: number; name: string | null } | null> {
   const { data: lastGames } = await supabase
@@ -81,11 +71,8 @@ async function findFinalsGame(
   return null
 }
 
-/**
- * Gets finalists for an event by finding the finals game and its participants
- */
 async function getFinalistsForEvent(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   eventId: number
 ): Promise<Finalist[]> {
   const finalsGame = await findFinalsGame(supabase, eventId)
@@ -125,11 +112,145 @@ async function getFinalistsForEvent(
   }))
 }
 
-/**
- * Counts unique players per event from event_participation table
- */
+async function getFinalistsFor1v1Event(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  eventId: number,
+  eventName: string | null
+): Promise<Finalist[]> {
+  const isLeagueEvent = eventName?.toLowerCase().includes('league') ?? false
+
+  if (isLeagueEvent) {
+    // For league events, count wins only from T1 games
+    // Get all games for this event where name contains "T1"
+    const { data: t1Games } = await supabase
+      .from('games')
+      .select('id')
+      .eq('event', eventId)
+      .ilike('name', '%T1%')
+
+    if (!t1Games || t1Games.length === 0) return []
+
+    const t1GameIds = t1Games.map((g: { id: number }) => g.id)
+
+    // Get all game participations for T1 games where ranking = 1 (winners)
+    const { data: t1Wins } = await supabase
+      .from('game_participation')
+      .select(
+        `
+        player,
+        player:players(id, username)
+      `
+      )
+      .in('game', t1GameIds)
+      .eq('ranking', 1)
+
+    if (!t1Wins || t1Wins.length === 0) return []
+
+    // Count wins per player
+    const winCounts = new Map<
+      number,
+      { id: number; username: string; wins: number }
+    >()
+
+    t1Wins.forEach((win: any) => {
+      const player = win.player
+      // Handle player data - could be object, array, or null
+      let playerData = player
+      if (Array.isArray(player)) {
+        playerData = player[0] || null
+      }
+      if (typeof playerData === 'number' || !playerData) {
+        return
+      }
+      if (!playerData.id || !playerData.username) {
+        return
+      }
+
+      const playerId = playerData.id
+      const current = winCounts.get(playerId)
+      if (current) {
+        current.wins += 1
+      } else {
+        winCounts.set(playerId, {
+          id: playerData.id,
+          username: playerData.username,
+          wins: 1,
+        })
+      }
+    })
+
+    if (winCounts.size === 0) return []
+
+    // Sort by wins descending, then take top 2
+    const sortedPlayers = Array.from(winCounts.values()).sort(
+      (a, b) => b.wins - a.wins
+    )
+    const topTwo = sortedPlayers.slice(0, 2)
+
+    // Return as Finalist array
+    return topTwo.map((p) => ({
+      id: p.id,
+      username: p.username,
+    }))
+  } else {
+    // For non-league 1v1 events, use event_participation games_won
+    const { data: participation } = await supabase
+      .from('event_participation')
+      .select(
+        `
+        player,
+        games_won,
+        player:players(id, username)
+      `
+      )
+      .eq('event', eventId)
+
+    if (!participation || participation.length === 0) return []
+
+    // Filter out entries without valid player data and map to finalist format
+    const playersWithWins = participation
+      .map((p: any) => {
+        const player = p.player
+        // Handle player data - could be object, array, or null
+        let playerData = player
+        if (Array.isArray(player)) {
+          playerData = player[0] || null
+        }
+        if (typeof playerData === 'number' || !playerData) {
+          return null
+        }
+        if (!playerData.id || !playerData.username) {
+          return null
+        }
+        return {
+          id: playerData.id,
+          username: playerData.username,
+          games_won: p.games_won ?? 0,
+        }
+      })
+      .filter(
+        (p): p is { id: number; username: string; games_won: number } =>
+          p !== null
+      )
+
+    if (playersWithWins.length === 0) return []
+
+    // Sort by games_won descending, then take top 2
+    const sortedPlayers = playersWithWins.sort(
+      (a, b) => b.games_won - a.games_won
+    )
+    const topTwo = sortedPlayers.slice(0, 2)
+
+    // Return as Finalist array
+    return topTwo.map((p) => ({
+      id: p.id,
+      username: p.username,
+    }))
+  }
+}
+
 async function getPlayerCountsByEvent(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   eventIds: number[]
 ): Promise<Map<number, number>> {
   const { data: participationData } = await supabase
@@ -153,11 +274,41 @@ async function getPlayerCountsByEvent(
   return playerCountMap
 }
 
-/**
- * Gets winner names for events
- */
+async function getGamesCountsByEvent(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  eventIds: number[]
+): Promise<Map<number, number>> {
+  if (eventIds.length === 0) {
+    return new Map<number, number>()
+  }
+
+  // Fetch event and games_won to sum up total games per event
+  const { data: participationData } = await supabase
+    .from('event_participation')
+    .select('event, games_won')
+    .in('event', eventIds)
+
+  const gamesCountMap = new Map<number, number>()
+
+  // Initialize all event IDs to 0 (in case an event has no participation)
+  eventIds.forEach((eventId) => {
+    gamesCountMap.set(eventId, 0)
+  })
+
+  // Sum games_won per event
+  participationData?.forEach(
+    (p: { event: number; games_won: number | null }) => {
+      const currentCount = gamesCountMap.get(p.event) || 0
+      const gamesWon = p.games_won ?? 0
+      gamesCountMap.set(p.event, currentCount + gamesWon)
+    }
+  )
+
+  return gamesCountMap
+}
+
 async function getWinnerNames(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   events: TournamentEvent[]
 ): Promise<Map<number, string>> {
   const winnerIds = events
@@ -180,15 +331,12 @@ async function getWinnerNames(
   return winnerMap
 }
 
-/**
- * Fetches all tournament data including player counts, winners, and finalists
- */
 export async function getAllTournamentsWithDetails(): Promise<{
   tournaments: TournamentWithDetails[]
   error: Error | null
   lastUpdated: string | null
 }> {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   try {
     // Fetch all events
@@ -230,9 +378,10 @@ export async function getAllTournamentsWithDetails(): Promise<{
 
     const eventIds = events.map((e: TournamentEvent) => e.id)
 
-    // Get player counts, winners, and finalists in parallel
-    const [playerCountMap, winnerMap] = await Promise.all([
+    // Get player counts, games counts, winners, and finalists in parallel
+    const [playerCountMap, gamesCountMap, winnerMap] = await Promise.all([
       getPlayerCountsByEvent(supabase, eventIds),
+      getGamesCountsByEvent(supabase, eventIds),
       getWinnerNames(supabase, events),
     ])
 
@@ -242,13 +391,26 @@ export async function getAllTournamentsWithDetails(): Promise<{
         e.num_players_per_game && e.num_players_per_game > 2
     )
 
+    // Get finalists for 1v1 events (2 players per game)
+    const eventsWith1v1 = events.filter(
+      (e: TournamentEvent) => e.num_players_per_game === 2
+    )
+
     // Fetch all finalists in parallel for better performance
-    const finalistsPromises = eventsWithMultiplePlayers.map(
-      async (event: TournamentEvent) => {
+    const finalistsPromises = [
+      ...eventsWithMultiplePlayers.map(async (event: TournamentEvent) => {
         const finalists = await getFinalistsForEvent(supabase, event.id)
         return { eventId: event.id, finalists }
-      }
-    )
+      }),
+      ...eventsWith1v1.map(async (event: TournamentEvent) => {
+        const finalists = await getFinalistsFor1v1Event(
+          supabase,
+          event.id,
+          event.name
+        )
+        return { eventId: event.id, finalists }
+      }),
+    ]
 
     const finalistsResults = await Promise.all(finalistsPromises)
     const finalistsByEvent = new Map<number, Finalist[]>()
@@ -271,6 +433,7 @@ export async function getAllTournamentsWithDetails(): Promise<{
         winner: event.winner,
         winner_name: event.winner ? winnerMap.get(event.winner) || null : null,
         player_count: playerCountMap.get(event.id) || 0,
+        games_count: gamesCountMap.get(event.id) || 0,
         finalists: finalistsByEvent.get(event.id) || [],
       })
     )

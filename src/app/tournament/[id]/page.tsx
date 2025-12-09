@@ -6,7 +6,6 @@ import {
 } from '@/lib/tournament'
 import TournamentBracket from '@/components/tournament-bracket'
 import Link from 'next/link'
-import { removeYearFromEventName } from '@/lib/utils'
 
 export default async function TournamentPage({
   params,
@@ -339,7 +338,7 @@ function TournamentHeader({
       <div className='inline-flex text-3xl font-semibold space-x-2 w-full justify-start md:justify-center'>
         <p>Tournament:</p>
         <p className='text-transparent bg-clip-text bg-gradient-to-tr to-[#0acffe] from-[#495aff] select-none'>
-          {removeYearFromEventName(event.name)}
+          {event.name || 'Unnamed Tournament'}
         </p>
       </div>
 
