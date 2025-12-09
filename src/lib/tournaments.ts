@@ -19,7 +19,12 @@ export type TournamentWithDetails = {
   finalists: Finalist[]
 }
 
-type Event = {
+/**
+ * Internal type for events with full tournament details.
+ * This is more comprehensive than the exported Event type in events.ts
+ * which only includes basic fields (id, name, start_date).
+ */
+type TournamentEvent = {
   id: number
   name: string | null
   start_date: string | null
@@ -153,7 +158,7 @@ async function getPlayerCountsByEvent(
  */
 async function getWinnerNames(
   supabase: ReturnType<typeof createClient>,
-  events: Event[]
+  events: TournamentEvent[]
 ): Promise<Map<number, string>> {
   const winnerIds = events
     .map((e) => e.winner)
@@ -200,7 +205,9 @@ export async function getAllTournamentsWithDetails(): Promise<{
         error:
           eventsError instanceof Error
             ? eventsError
-            : new Error(String(eventsError)),
+            : new Error(
+                eventsError.message || String(eventsError) || 'Unknown error'
+              ),
         lastUpdated: null,
       }
     }

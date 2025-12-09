@@ -59,49 +59,12 @@ export default async function TournamentPage({
 
   const event = events
 
-  console.log('=== EVENT QUERY DEBUG ===')
-  console.log('Querying for event ID:', eventId)
-  console.log('Event details:', {
-    id: event.id,
-    name: event.name,
-    start_date: event.start_date,
-  })
-
   // Fetch all games for this event (without nested data first)
   const { data: games, error: gamesError } = await supabase
     .from('games')
     .select('id, name, created_at')
     .eq('event', event.id)
     .order('created_at', { ascending: true })
-
-  console.log('=== GAMES QUERY RESULTS ===')
-  console.log(`Total games found for event ${eventId}:`, games?.length || 0)
-  if (games && games.length > 0) {
-    console.log(
-      'All game IDs:',
-      games.map((g) => g.id)
-    )
-    console.log('Games by name:')
-    const gamesByName = new Map<string, number[]>()
-    games.forEach((g) => {
-      const name = g.name || 'unnamed'
-      if (!gamesByName.has(name)) {
-        gamesByName.set(name, [])
-      }
-      gamesByName.get(name)!.push(g.id)
-    })
-    Array.from(gamesByName.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .forEach(([name, ids]) => {
-        console.log(
-          `  ${name}: ${ids.length} game(s) - IDs: [${ids.join(', ')}]`
-        )
-      })
-    console.log(
-      'First 10 games:',
-      games.slice(0, 10).map((g) => ({ id: g.id, name: g.name }))
-    )
-  }
 
   if (gamesError) {
     return (
@@ -142,8 +105,6 @@ export default async function TournamentPage({
   // Get all participation data for these games
   const gameIds = games.map((g) => g.id)
 
-  console.log(`Querying participation for ${gameIds.length} games`)
-
   // Supabase has limits on .in() queries (typically 100-1000 items)
   // Batch the queries if we have too many game IDs to avoid hitting limits
   const BATCH_SIZE = 100
@@ -153,11 +114,6 @@ export default async function TournamentPage({
   // Query in batches
   for (let i = 0; i < gameIds.length; i += BATCH_SIZE) {
     const batch = gameIds.slice(i, i + BATCH_SIZE)
-    console.log(
-      `Querying batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(
-        gameIds.length / BATCH_SIZE
-      )} (${batch.length} games)`
-    )
 
     // Use simple query (more reliable for large batches than nested queries)
     const simpleResult = await supabase
@@ -179,8 +135,6 @@ export default async function TournamentPage({
     }
   }
 
-  console.log(`Total participation records found: ${participationData.length}`)
-
   // Now fetch players separately for all participations
   if (participationData.length > 0) {
     const playerIds = Array.from(
@@ -190,8 +144,6 @@ export default async function TournamentPage({
           .filter((id: any) => id != null)
       )
     )
-
-    console.log(`Fetching ${playerIds.length} unique players`)
 
     // Batch player queries too if needed
     const playersMap = new Map<number, any>()
@@ -214,10 +166,6 @@ export default async function TournamentPage({
       ...p,
       player: playersMap.get(p.player) || null,
     }))
-
-    console.log(
-      `Combined participation data with player info: ${participationData.length} records`
-    )
   }
 
   if (participationError) {
@@ -249,27 +197,7 @@ export default async function TournamentPage({
     }
   }
 
-  console.log('=== PARTICIPATION ANALYSIS ===')
-  console.log(`Total participation records: ${participationData?.length || 0}`)
-  console.log(`Games with participation: ${participationByGame.size}`)
-  console.log(
-    `Games without participation: ${games.length - participationByGame.size}`
-  )
-
-  // Show which games have participation
-  const gamesWithParticipation = Array.from(participationByGame.keys())
-  const gamesWithoutParticipation = games
-    .map((g) => g.id)
-    .filter((id) => !participationByGame.has(id))
-
-  console.log('Games WITH participation:', gamesWithParticipation.slice(0, 20))
-  console.log(
-    'Games WITHOUT participation (first 20):',
-    gamesWithoutParticipation.slice(0, 20)
-  )
-
-  // Show breakdown by game name
-  console.log('=== GAMES BY NAME WITH PARTICIPATION ===')
+  // Store duplicate game names for debug display
   const gamesByNameWithParticipation = new Map<
     string,
     { with: number[]; without: number[] }
@@ -286,42 +214,6 @@ export default async function TournamentPage({
       entry.without.push(g.id)
     }
   })
-
-  Array.from(gamesByNameWithParticipation.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .slice(0, 10) // Show first 10
-    .forEach(([name, { with: withIds, without: withoutIds }]) => {
-      console.log(
-        `  ${name}: ${withIds.length} with participation, ${withoutIds.length} without`
-      )
-      if (withIds.length > 0) {
-        console.log(
-          `    With participation IDs: [${withIds.slice(0, 5).join(', ')}${
-            withIds.length > 5 ? '...' : ''
-          }]`
-        )
-      }
-      if (withoutIds.length > 0) {
-        console.log(
-          `    Without participation IDs: [${withoutIds
-            .slice(0, 5)
-            .join(', ')}${withoutIds.length > 5 ? '...' : ''}]`
-        )
-      }
-    })
-
-  // Store duplicate game names for debug display
-  const duplicateGameNames = Array.from(gamesByNameWithParticipation.entries())
-    .filter(
-      ([_, { with: withIds, without: withoutIds }]) =>
-        withIds.length + withoutIds.length > 1
-    )
-    .map(([name, { with: withIds, without: withoutIds }]) => ({
-      name,
-      total: withIds.length + withoutIds.length,
-      withParticipants: withIds.length,
-      withoutParticipants: withoutIds.length,
-    }))
 
   // Map games with their participants
   // Filter to only show games that have participants OR deduplicate by name (keep first with participants)
@@ -381,75 +273,15 @@ export default async function TournamentPage({
     }
   }
 
-  console.log(
-    `Filtered ${games.length} games down to ${gamesWithParticipants.length} games with participants`
-  )
-
   // Group games by round
   const rounds = groupGamesByRound(gamesWithParticipants)
 
   // Fetch winner info if available
   const winnerName = await getWinnerName(supabase, event.winner)
 
-  // Prepare debug info for display
-  const debugInfo = {
-    eventId: eventId,
-    eventName: event.name,
-    totalGames: games.length,
-    gamesWithParticipants: gamesWithParticipants.length,
-    gamesWithoutParticipants: games.length - participationByGame.size,
-    duplicateGameNames: duplicateGameNames,
-  }
-
   return (
     <div className='flex flex-col space-y-8'>
       <TournamentHeader event={event} winnerName={winnerName} />
-
-      {/* Debug Info */}
-      <details className='bg-muted p-4 rounded-lg text-sm'>
-        <summary className='cursor-pointer font-semibold mb-2'>
-          Debug Info - Event {eventId}
-        </summary>
-        <div className='space-y-2 mt-2'>
-          <div>
-            <strong>Event ID:</strong> {debugInfo.eventId}
-          </div>
-          <div>
-            <strong>Event Name:</strong> {debugInfo.eventName}
-          </div>
-          <div>
-            <strong>Total Games in DB:</strong> {debugInfo.totalGames}
-          </div>
-          <div>
-            <strong>Games with Participants:</strong>{' '}
-            {debugInfo.gamesWithParticipants}
-          </div>
-          <div>
-            <strong>Games without Participants:</strong>{' '}
-            {debugInfo.gamesWithoutParticipants}
-          </div>
-          <div>
-            <strong>Duplicate Game Names:</strong>
-            <ul className='list-disc list-inside mt-1'>
-              {debugInfo.duplicateGameNames
-                .slice(0, 10)
-                .map(
-                  (dup: {
-                    name: string
-                    total: number
-                    withParticipants: number
-                    withoutParticipants: number
-                  }) => (
-                    <li key={dup.name}>
-                      {dup.name}: {dup.total} total ({dup.withParticipants} with
-                      participants, {dup.withoutParticipants} without)
-                    </li>
-                  )
-                )}
-            </ul>
-          </div>
-        </div>
-      </details>
 
       {/* Bracket */}
       {rounds.length > 0 ? (

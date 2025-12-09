@@ -6,14 +6,6 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * Extracts the year from a date string
- */
-export function getYear(date: string | null): string | null {
-  if (!date) return null
-  return new Date(date).getFullYear().toString()
-}
-
-/**
  * Formats a date string to a readable format (e.g., "Jan 15, 2024")
  */
 export function getFormattedDate(date: string | null): string | null {
