@@ -10,11 +10,11 @@ import Link from 'next/link'
 export default async function TournamentPage({
   params,
 }: {
-  params: Promise<{ id: string }> | { id: string }
+  params: Promise<{ id: string }>
 }) {
   const supabase = await createClient()
-  const resolvedParams = await Promise.resolve(params)
-  const eventId = parseInt(resolvedParams.id, 10)
+  const { id } = await params
+  const eventId = parseInt(id, 10)
 
   if (isNaN(eventId)) {
     return (

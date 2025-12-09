@@ -8,10 +8,10 @@ import EventLink from '@/components/event-link'
 export default async function PlayerProfile({
   params,
 }: {
-  params: Promise<{ username: string }> | { username: string }
+  params: Promise<{ username: string }>
 }) {
   const supabase = await createClient()
-  const resolvedParams = await Promise.resolve(params)
+  const { username: usernameParam } = await params
 
   const { data } = await supabase
     .from('players')
@@ -27,7 +27,7 @@ export default async function PlayerProfile({
     )
     `
     )
-    .eq('username', decodeURIComponent(resolvedParams.username))
+    .eq('username', decodeURIComponent(usernameParam))
 
   if (!data || data[0] === null) {
     return <div>Player not found</div>
