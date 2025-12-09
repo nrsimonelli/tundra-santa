@@ -181,6 +181,7 @@ async function getWinnerNames(
 export async function getAllTournamentsWithDetails(): Promise<{
   tournaments: TournamentWithDetails[]
   error: Error | null
+  lastUpdated: string | null
 }> {
   const supabase = createClient()
 
@@ -194,12 +195,22 @@ export async function getAllTournamentsWithDetails(): Promise<{
       .order('start_date', { ascending: false })
 
     if (eventsError) {
-      return { tournaments: [], error: eventsError }
+      return { tournaments: [], error: eventsError, lastUpdated: null }
     }
 
     if (!events || events.length === 0) {
-      return { tournaments: [], error: null }
+      return { tournaments: [], error: null, lastUpdated: null }
     }
+
+    // Get the most recent game's created_at date as the last updated date
+    const { data: mostRecentGame } = await supabase
+      .from('games')
+      .select('created_at')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    const lastUpdated = mostRecentGame?.created_at || null
 
     const eventIds = events.map((e) => e.id)
 
@@ -237,11 +248,12 @@ export async function getAllTournamentsWithDetails(): Promise<{
       finalists: finalistsByEvent.get(event.id) || [],
     }))
 
-    return { tournaments, error: null }
+    return { tournaments, error: null, lastUpdated }
   } catch (error) {
     return {
       tournaments: [],
       error: error instanceof Error ? error : new Error('Unknown error'),
+      lastUpdated: null,
     }
   }
 }

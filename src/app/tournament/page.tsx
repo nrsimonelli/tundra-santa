@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { removeYearFromEventName, getYear, getFormattedDate } from '@/lib/utils'
+import { removeYearFromEventName, getFormattedDate } from '@/lib/utils'
 import {
   Table,
   TableBody,
@@ -13,7 +13,8 @@ import { getAllTournamentsWithDetails } from '@/lib/tournaments'
 import { Crown } from 'lucide-react'
 
 export default async function TournamentsPage() {
-  const { tournaments, error } = await getAllTournamentsWithDetails()
+  const { tournaments, error, lastUpdated } =
+    await getAllTournamentsWithDetails()
 
   if (error) {
     return (
@@ -39,19 +40,15 @@ export default async function TournamentsPage() {
 
   return (
     <div className='max-w-5xl mx-auto shadow-lg -mt-20 z-10 bg-background rounded-md p-6'>
-      <div className='mb-8'>
-        <h1 className='text-3xl font-bold mb-2 text-primary'>Tournaments</h1>
-        <p className='text-muted-foreground'>
-          Browse all tournaments and view detailed brackets and results.
-        </p>
-      </div>
-
       <Table>
-        <TableCaption>A list of all tournaments in the database.</TableCaption>
+        <TableCaption>
+          {lastUpdated
+            ? `Updated: ${getFormattedDate(lastUpdated)}`
+            : 'A list of all tournaments in the database.'}
+        </TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead className='text-primary'>Name</TableHead>
-            <TableHead className='text-primary'>Year</TableHead>
+            <TableHead className='text-primary'>Tournament</TableHead>
             <TableHead className='text-primary'>Date</TableHead>
             <TableHead className='text-primary'>Participants</TableHead>
             <TableHead className='text-primary'>Finalists</TableHead>
@@ -66,7 +63,6 @@ export default async function TournamentsPage() {
                     'Unnamed Tournament'}
                 </Link>
               </TableCell>
-              <TableCell>{getYear(tournament.start_date) || '—'}</TableCell>
               <TableCell>
                 {getFormattedDate(tournament.start_date) || '—'}
               </TableCell>
