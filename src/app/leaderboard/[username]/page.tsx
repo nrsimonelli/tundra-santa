@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/server'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
@@ -23,7 +22,7 @@ export default async function PlayerProfile({
     username,
     current_rating->ordinal,
     event_participation (
-      event: events(id, name, start_date, rating_event),
+      event: events(id, name, start_date, rating_event, num_players_per_game),
       games_won,
       updated_rating->ordinal
     )
@@ -44,8 +43,29 @@ export default async function PlayerProfile({
     return typeof value === 'number'
   }
 
+  // Sort events by date (most recent first)
+  const sortedEvents = [...event_participation].sort((a, b) => {
+    const dateA = a.event?.start_date
+      ? new Date(a.event.start_date).getTime()
+      : 0
+    const dateB = b.event?.start_date
+      ? new Date(b.event.start_date).getTime()
+      : 0
+    return dateB - dateA
+  })
+
+  const mostRecentEvent = sortedEvents[0]?.event
+
+  // Helper to check if event contributes to rating
+  const isRatingEvent = (entry: (typeof event_participation)[0]) => {
+    const event = entry.event
+    if (!event) return false
+    // Rating events are those with rating_event=true AND num_players_per_game > 2 (3 or 4 players)
+    return event.rating_event === true && (event.num_players_per_game ?? 0) > 2
+  }
+
   const chartData = event_participation
-    .filter((entry) => entry.event?.rating_event)
+    .filter((entry) => isRatingEvent(entry))
     .map((entry) => {
       return {
         name: removeYearFromEventName(entry.event?.name ?? null),
@@ -55,52 +75,63 @@ export default async function PlayerProfile({
     })
 
   return (
-    <div className='flex space-y-8 flex-col items-start md:flex-row justify-start flex-wrap'>
-      <div className='inline-flex text-3xl font-semibold w-full justify-start md:justify-center'>
-        {/* <p>Player profile:</p> */}
+    <div className='flex flex-col items-start md:flex-row justify-start flex-wrap gap-8'>
+      <div className='inline-flex text-3xl font-semibold space-x-2 w-full justify-start md:justify-center'>
+        <p>Player profile:</p>
         <p className='text-transparent bg-clip-text bg-gradient-to-tr to-[#0acffe] from-[#495aff] select-none'>
           {username}
         </p>
       </div>
-      <div className='flex-col flex space-y-4'>
-        <div className='max-w-[300px] w-full space-y-2'>
+      <div className='contents md:flex md:flex-col md:gap-4 md:max-w-[300px] md:w-full md:order-1'>
+        <div className='max-w-[300px] w-full space-y-2 order-1 md:order-none'>
           <p className='text-2xl text-foreground font-semibold'>Stats</p>
-          <div>
+          <div className='space-y-1'>
             <p className=''>
               Current rating: {Math.round(current_rating as number)}
             </p>
             <p className=''>Game wins: {wins}</p>
+            {mostRecentEvent && (
+              <p className=''>
+                Most recent event:{' '}
+                <Link
+                  href={`/tournament/${mostRecentEvent.id}`}
+                  className='hover:underline cursor-pointer'
+                >
+                  {removeYearFromEventName(mostRecentEvent.name)}
+                </Link>
+              </p>
+            )}
           </div>
         </div>
 
-        <div className='max-w-[300px] w-full'>
-          <div className='space-y-2'>
-            <p className='font-semibold text-2xl text-foreground'>
-              Event History
-            </p>
-            <div>
-              {event_participation.map((entry) => {
-                const eventName = entry.event?.name
-                const eventId = entry.event?.id
-                if (!eventName || !eventId) return null
-                return (
-                  <p key={eventId}>
-                    <Link
-                      href={`/tournament/${eventId}`}
-                      className='text-primary hover:underline'
-                    >
-                      {removeYearFromEventName(eventName)}
-                    </Link>
-                  </p>
-                )
-              })}
-            </div>
+        <div className='max-w-[300px] w-full space-y-2 order-3 md:order-none'>
+          <p className='font-semibold text-2xl text-foreground'>
+            Event History
+          </p>
+          <div className='space-y-1'>
+            {sortedEvents.map((entry) => {
+              const eventName = entry.event?.name
+              const eventId = entry.event?.id
+              if (!eventName || !eventId) return null
+              const isRating = isRatingEvent(entry)
+              return (
+                <p key={eventId}>
+                  <Link
+                    href={`/tournament/${eventId}`}
+                    className='hover:underline cursor-pointer'
+                  >
+                    {removeYearFromEventName(eventName)}
+                    {!isRating && ' *'}
+                  </Link>
+                </p>
+              )
+            })}
           </div>
         </div>
       </div>
 
       {chartData.length > 1 && (
-        <div className='flex-col space-y-4 min-w-[300px] w-full flex flex-1'>
+        <div className='flex flex-col space-y-4 min-w-[300px] w-full flex-1 order-2 md:order-2'>
           <p className='md:mx-auto mx-0 text-2xl font-semibold text-foreground'>
             Tournament Rating by Event
           </p>
@@ -111,6 +142,11 @@ export default async function PlayerProfile({
           >
             Back to leaderboard
           </Link>
+          <p className='text-sm text-muted-foreground text-center max-w-md mx-auto'>
+            * Tournament Rating is calculated from three & four player events.
+            Two player events, while still official tournament events, are not a
+            part of the rating system at this time.
+          </p>
         </div>
       )}
     </div>
