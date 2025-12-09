@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getCachedEvent } from '@/lib/supabase/cached-queries'
 import {
   parseGameName,
   groupGamesByRound,
@@ -6,6 +7,10 @@ import {
 } from '@/lib/tournament'
 import TournamentBracket from '@/components/tournament-bracket'
 import Link from 'next/link'
+
+// Next.js requires each route segment to export its own `revalidate` constant.
+// We re-export the shared value here so Next.js can find it in this route file.
+export { revalidate } from '@/lib/cache-config'
 
 export default async function TournamentPage({
   params,
@@ -34,13 +39,9 @@ export default async function TournamentPage({
   }
 
   // Fetch event by ID
-  const { data: events, error: eventError } = await supabase
-    .from('events')
-    .select('id, name, start_date, winner, num_players_per_game')
-    .eq('id', eventId)
-    .single()
+  const event = await getCachedEvent(eventId)
 
-  if (eventError || !events) {
+  if (!event) {
     return (
       <div className='text-center py-8'>
         <h2 className='text-2xl font-semibold mb-4'>Tournament not found</h2>
@@ -56,8 +57,6 @@ export default async function TournamentPage({
       </div>
     )
   }
-
-  const event = events
 
   // Fetch all games for this event (without nested data first)
   const { data: games, error: gamesError } = await supabase

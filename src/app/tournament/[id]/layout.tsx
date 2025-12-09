@@ -9,8 +9,3 @@ export default function TournamentLayout({
     </div>
   )
 }
-
-
-
-
-

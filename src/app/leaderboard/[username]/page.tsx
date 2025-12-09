@@ -1,39 +1,28 @@
-import { createClient } from '@/lib/supabase/server'
+import { getCachedPlayer } from '@/lib/supabase/cached-queries'
 import Link from 'next/link'
 import { removeYearFromEventName } from '@/lib/utils'
 import { Chart } from '@/components/chart'
 import { sortByEventDate, getMostRecentEvent } from '@/lib/events'
 import EventLink from '@/components/event-link'
 
+// Next.js requires each route segment to export its own `revalidate` constant.
+// We re-export the shared value here so Next.js can find it in this route file.
+export { revalidate } from '@/lib/cache-config'
+
 export default async function PlayerProfile({
   params,
 }: {
   params: Promise<{ username: string }>
 }) {
-  const supabase = await createClient()
   const { username: usernameParam } = await params
+  const decodedUsername = decodeURIComponent(usernameParam)
+  const data = await getCachedPlayer(decodedUsername)
 
-  const { data } = await supabase
-    .from('players')
-    .select(
-      `
-    id, 
-    username,
-    current_rating->ordinal,
-    event_participation (
-      event: events(id, name, start_date, rating_event, num_players_per_game),
-      games_won,
-      updated_rating->ordinal
-    )
-    `
-    )
-    .eq('username', decodeURIComponent(usernameParam))
-
-  if (!data || data[0] === null) {
+  if (!data) {
     return <div>Player not found</div>
   }
 
-  const { ordinal: current_rating, event_participation, username } = data[0]
+  const { ordinal: current_rating, event_participation, username } = data
   const wins = event_participation.reduce(
     (acc: number, event: { games_won: number | null }) => {
       return acc + (event.games_won ?? 0)

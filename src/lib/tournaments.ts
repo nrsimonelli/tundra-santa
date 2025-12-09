@@ -1,4 +1,6 @@
+import { unstable_cache } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { revalidate } from './cache-config'
 
 export type Finalist = {
   id: number
@@ -336,114 +338,125 @@ export async function getAllTournamentsWithDetails(): Promise<{
   error: Error | null
   lastUpdated: string | null
 }> {
-  const supabase = await createClient()
+  return unstable_cache(
+    async () => {
+      const supabase = await createClient()
 
-  try {
-    // Fetch all events
-    const { data: events, error: eventsError } = await supabase
-      .from('events')
-      .select(
-        'id, name, start_date, num_players_per_game, bid, draft, rating_event, winner'
-      )
-      .order('start_date', { ascending: false })
+      try {
+        // Fetch all events
+        const { data: events, error: eventsError } = await supabase
+          .from('events')
+          .select(
+            'id, name, start_date, num_players_per_game, bid, draft, rating_event, winner'
+          )
+          .order('start_date', { ascending: false })
 
-    if (eventsError) {
-      return {
-        tournaments: [],
-        error:
-          eventsError instanceof Error
-            ? eventsError
-            : new Error(
-                (eventsError as { message?: string }).message ||
-                  String(eventsError) ||
-                  'Unknown error'
-              ),
-        lastUpdated: null,
-      }
-    }
+        if (eventsError) {
+          return {
+            tournaments: [],
+            error:
+              eventsError instanceof Error
+                ? eventsError
+                : new Error(
+                    (eventsError as { message?: string }).message ||
+                      String(eventsError) ||
+                      'Unknown error'
+                  ),
+            lastUpdated: null,
+          }
+        }
 
-    if (!events || events.length === 0) {
-      return { tournaments: [], error: null, lastUpdated: null }
-    }
+        if (!events || events.length === 0) {
+          return { tournaments: [], error: null, lastUpdated: null }
+        }
 
-    // Get the most recent game's created_at date as the last updated date
-    const { data: mostRecentGame } = await supabase
-      .from('games')
-      .select('created_at')
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single()
+        // Get the most recent game's created_at date as the last updated date
+        const { data: mostRecentGame } = await supabase
+          .from('games')
+          .select('created_at')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single()
 
-    const lastUpdated = mostRecentGame?.created_at || null
+        const lastUpdated = mostRecentGame?.created_at || null
 
-    const eventIds = events.map((e: TournamentEvent) => e.id)
+        const eventIds = events.map((e: TournamentEvent) => e.id)
 
-    // Get player counts, games counts, winners, and finalists in parallel
-    const [playerCountMap, gamesCountMap, winnerMap] = await Promise.all([
-      getPlayerCountsByEvent(supabase, eventIds),
-      getGamesCountsByEvent(supabase, eventIds),
-      getWinnerNames(supabase, events),
-    ])
+        // Get player counts, games counts, winners, and finalists in parallel
+        const [playerCountMap, gamesCountMap, winnerMap] = await Promise.all([
+          getPlayerCountsByEvent(supabase, eventIds),
+          getGamesCountsByEvent(supabase, eventIds),
+          getWinnerNames(supabase, events),
+        ])
 
-    // Get finalists for events with more than 2 players
-    const eventsWithMultiplePlayers = events.filter(
-      (e: TournamentEvent) =>
-        e.num_players_per_game && e.num_players_per_game > 2
-    )
-
-    // Get finalists for 1v1 events (2 players per game)
-    const eventsWith1v1 = events.filter(
-      (e: TournamentEvent) => e.num_players_per_game === 2
-    )
-
-    // Fetch all finalists in parallel for better performance
-    const finalistsPromises = [
-      ...eventsWithMultiplePlayers.map(async (event: TournamentEvent) => {
-        const finalists = await getFinalistsForEvent(supabase, event.id)
-        return { eventId: event.id, finalists }
-      }),
-      ...eventsWith1v1.map(async (event: TournamentEvent) => {
-        const finalists = await getFinalistsFor1v1Event(
-          supabase,
-          event.id,
-          event.name
+        // Get finalists for events with more than 2 players
+        const eventsWithMultiplePlayers = events.filter(
+          (e: TournamentEvent) =>
+            e.num_players_per_game && e.num_players_per_game > 2
         )
-        return { eventId: event.id, finalists }
-      }),
-    ]
 
-    const finalistsResults = await Promise.all(finalistsPromises)
-    const finalistsByEvent = new Map<number, Finalist[]>()
-    finalistsResults.forEach(({ eventId, finalists }) => {
-      if (finalists.length > 0) {
-        finalistsByEvent.set(eventId, finalists)
+        // Get finalists for 1v1 events (2 players per game)
+        const eventsWith1v1 = events.filter(
+          (e: TournamentEvent) => e.num_players_per_game === 2
+        )
+
+        // Fetch all finalists in parallel for better performance
+        const finalistsPromises = [
+          ...eventsWithMultiplePlayers.map(async (event: TournamentEvent) => {
+            const finalists = await getFinalistsForEvent(supabase, event.id)
+            return { eventId: event.id, finalists }
+          }),
+          ...eventsWith1v1.map(async (event: TournamentEvent) => {
+            const finalists = await getFinalistsFor1v1Event(
+              supabase,
+              event.id,
+              event.name
+            )
+            return { eventId: event.id, finalists }
+          }),
+        ]
+
+        const finalistsResults = await Promise.all(finalistsPromises)
+        const finalistsByEvent = new Map<number, Finalist[]>()
+        finalistsResults.forEach(({ eventId, finalists }) => {
+          if (finalists.length > 0) {
+            finalistsByEvent.set(eventId, finalists)
+          }
+        })
+
+        // Combine all data
+        const tournaments: TournamentWithDetails[] = events.map(
+          (event: TournamentEvent) => ({
+            id: event.id,
+            name: event.name,
+            start_date: event.start_date,
+            num_players_per_game: event.num_players_per_game,
+            bid: event.bid,
+            draft: event.draft,
+            rating_event: event.rating_event,
+            winner: event.winner,
+            winner_name: event.winner
+              ? winnerMap.get(event.winner) || null
+              : null,
+            player_count: playerCountMap.get(event.id) || 0,
+            games_count: gamesCountMap.get(event.id) || 0,
+            finalists: finalistsByEvent.get(event.id) || [],
+          })
+        )
+
+        return { tournaments, error: null, lastUpdated }
+      } catch (error) {
+        return {
+          tournaments: [],
+          error: error instanceof Error ? error : new Error('Unknown error'),
+          lastUpdated: null,
+        }
       }
-    })
-
-    // Combine all data
-    const tournaments: TournamentWithDetails[] = events.map(
-      (event: TournamentEvent) => ({
-        id: event.id,
-        name: event.name,
-        start_date: event.start_date,
-        num_players_per_game: event.num_players_per_game,
-        bid: event.bid,
-        draft: event.draft,
-        rating_event: event.rating_event,
-        winner: event.winner,
-        winner_name: event.winner ? winnerMap.get(event.winner) || null : null,
-        player_count: playerCountMap.get(event.id) || 0,
-        games_count: gamesCountMap.get(event.id) || 0,
-        finalists: finalistsByEvent.get(event.id) || [],
-      })
-    )
-
-    return { tournaments, error: null, lastUpdated }
-  } catch (error) {
-    return {
-      tournaments: [],
-      error: error instanceof Error ? error : new Error('Unknown error'),
-      lastUpdated: null,
+    },
+    ['all-tournaments-with-details'],
+    {
+      revalidate: revalidate,
+      tags: ['tournaments'],
     }
-  }
+  )()
 }

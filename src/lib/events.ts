@@ -1,4 +1,6 @@
+import { unstable_cache } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { revalidate } from './cache-config'
 
 export type Event = {
   id: number
@@ -12,60 +14,69 @@ export async function getEventsByYear(): Promise<{
   eventsByYear: EventsByYear
   sortedYears: number[]
 }> {
-  const supabase = await createClient()
+  return unstable_cache(
+    async () => {
+      const supabase = await createClient()
 
-  // Fetch all rating events (events that contribute to tournament rating)
-  const { data: events } = await supabase
-    .from('events')
-    .select('id, name, start_date, rating_event')
-    .eq('rating_event', true)
-    .order('start_date', { ascending: false })
+      // Fetch all rating events (events that contribute to tournament rating)
+      const { data: events } = await supabase
+        .from('events')
+        .select('id, name, start_date, rating_event')
+        .eq('rating_event', true)
+        .order('start_date', { ascending: false })
 
-  // Group events by year based on their start_date
-  const eventsByYear: EventsByYear = new Map()
+      // Group events by year based on their start_date
+      const eventsByYear: EventsByYear = new Map()
 
-  events?.forEach(
-    (event: {
-      id: number
-      name: string | null
-      start_date: string | null
-      rating_event: boolean | null
-    }) => {
-      // Skip events without a start_date (can't determine year)
-      if (!event.start_date) {
-        return
-      }
-      // Extract year from start_date to categorize the event
-      // Use UTC methods to avoid timezone conversion issues
-      try {
-        const date = new Date(event.start_date)
-        // Check if date is valid
-        if (isNaN(date.getTime())) {
-          return
+      events?.forEach(
+        (event: {
+          id: number
+          name: string | null
+          start_date: string | null
+          rating_event: boolean | null
+        }) => {
+          // Skip events without a start_date (can't determine year)
+          if (!event.start_date) {
+            return
+          }
+          // Extract year from start_date to categorize the event
+          // Use UTC methods to avoid timezone conversion issues
+          try {
+            const date = new Date(event.start_date)
+            // Check if date is valid
+            if (isNaN(date.getTime())) {
+              return
+            }
+            // Use UTC methods to get the year from the UTC date, not local timezone
+            const year = date.getUTCFullYear()
+            if (!eventsByYear.has(year)) {
+              eventsByYear.set(year, [])
+            }
+            eventsByYear.get(year)!.push({
+              id: event.id,
+              name: event.name,
+              start_date: event.start_date,
+            })
+          } catch (error) {
+            console.error(
+              `Error parsing date for event ${event.id} (${event.name}): ${event.start_date}`,
+              error
+            )
+          }
         }
-        // Use UTC methods to get the year from the UTC date, not local timezone
-        const year = date.getUTCFullYear()
-        if (!eventsByYear.has(year)) {
-          eventsByYear.set(year, [])
-        }
-        eventsByYear.get(year)!.push({
-          id: event.id,
-          name: event.name,
-          start_date: event.start_date,
-        })
-      } catch (error) {
-        console.error(
-          `Error parsing date for event ${event.id} (${event.name}): ${event.start_date}`,
-          error
-        )
-      }
+      )
+
+      // Sort years in descending order
+      const sortedYears = Array.from(eventsByYear.keys()).sort((a, b) => b - a)
+
+      return { eventsByYear, sortedYears }
+    },
+    ['events-by-year'],
+    {
+      revalidate: revalidate, // Cache for 1 hour
+      tags: ['events'],
     }
-  )
-
-  // Sort years in descending order
-  const sortedYears = Array.from(eventsByYear.keys()).sort((a, b) => b - a)
-
-  return { eventsByYear, sortedYears }
+  )()
 }
 
 export function sortEventsByDate(events: Event[]): Event[] {

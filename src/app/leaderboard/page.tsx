@@ -7,15 +7,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { createClient } from '@/lib/supabase/server'
+import { getCachedPlayers } from '@/lib/supabase/cached-queries'
 import { ClickableTableRow } from '@/components/clickable-table-row'
 
+// Next.js requires each route segment to export its own `revalidate` constant.
+// We re-export the shared value here so Next.js can find it in this route file.
+export { revalidate } from '@/lib/cache-config'
+
 export default async function Leaderboard() {
-  const supabase = await createClient()
-  const { data: players } = await supabase
-    .from('players')
-    .select()
-    .order('current_rating->ordinal', { ascending: false })
+  const players = await getCachedPlayers()
 
   return (
     <Table>
