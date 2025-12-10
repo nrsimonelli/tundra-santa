@@ -1,10 +1,8 @@
 import { getAllTournamentsWithDetails } from '@/lib/tournaments'
 import TournamentTable from '@/components/tournament-table'
-import { revalidate as REVALIDATE } from '@/lib/cache-config'
 
-// Next.js requires each route segment to export its own `revalidate` constant.
-// We import the shared value and assign it to a local constant so Next.js can statically analyze it.
-export const revalidate = REVALIDATE
+// Revalidate every hour
+export const revalidate = 3600
 
 export default async function TournamentsPage() {
   const { tournaments, error, lastUpdated } =

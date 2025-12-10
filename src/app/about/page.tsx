@@ -1,11 +1,8 @@
 import { getEventsByYear, sortEventsByDate, type Event } from '@/lib/events'
 import EventLink from '@/components/event-link'
-import { revalidate as REVALIDATE } from '@/lib/cache-config'
 
-// Force static generation at build time - this page is nearly completely static
-export const dynamic = 'force-static'
 // Revalidate every hour to keep event list fresh
-export const revalidate = REVALIDATE
+export const revalidate = 3600
 
 export default async function About() {
   const { eventsByYear, sortedYears } = await getEventsByYear()
