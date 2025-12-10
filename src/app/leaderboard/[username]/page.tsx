@@ -79,13 +79,11 @@ export default async function PlayerProfile({
         <div className='max-w-[300px] w-full space-y-2 order-1 md:order-none'>
           <p className='text-2xl text-foreground font-semibold'>Stats</p>
           <div className='space-y-1'>
-            <p className=''>
-              Current rating: {Math.round(current_rating as number)}
-            </p>
-            <p className=''>Game wins: {wins}</p>
+            <p className=''>Rating: {Math.round(current_rating as number)}</p>
+            <p className=''>Wins: {wins}</p>
             {mostRecentEvent && (
               <p className=''>
-                Most recent event:{' '}
+                Last event:{' '}
                 <EventLink
                   eventId={mostRecentEvent.id}
                   eventName={mostRecentEvent.name}
