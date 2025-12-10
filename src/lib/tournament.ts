@@ -1,450 +1,16 @@
-export interface ParsedGameName {
-  group: string | null
-  round: string | null
-  roundNumber: number | null
-  gameNumber: number | null
-  isSpecialRound: boolean
-  originalName: string
-}
+export type TournamentFormat = 'tournament' | 'league' | '1v1'
 
-export type RoundType =
-  | 'group'
-  | 'semifinals'
-  | 'finals'
-  | 'quarterfinals'
-  | 'prequarter'
-  | 'elimination'
-  | 'playin'
-  | 'tier'
-  | 'unknown'
-
-const PREQUARTER_BASE = 50
-const QUARTERFINAL_BASE = 100
-const SEMIFINAL_BASE = 200
-const FINAL_BASE = 300
-const UNKNOWN_ROUND_SORT_KEY = 999
-
-interface RoundTypeConfig {
-  roundType: RoundType
-  baseNumber: number
-  label: string
-  keywords: string[]
-}
-
-const ROUND_TYPE_CONFIGS: Record<string, RoundTypeConfig> = {
-  prequarter: {
-    roundType: 'prequarter',
-    baseNumber: PREQUARTER_BASE,
-    label: 'PreQuarters',
-    keywords: ['prequarter', 'pre-quarter'],
-  },
-  quarterfinals: {
-    roundType: 'quarterfinals',
-    baseNumber: QUARTERFINAL_BASE,
-    label: 'Quarterfinals',
-    keywords: ['quarterfinal', 'quarter', 'qf', 'qe'],
-  },
-  semifinals: {
-    roundType: 'semifinals',
-    baseNumber: SEMIFINAL_BASE,
-    label: 'Semifinals',
-    keywords: ['semifinal', 'semi', 'sf', 'se'],
-  },
-  finals: {
-    roundType: 'finals',
-    baseNumber: FINAL_BASE,
-    label: 'Finals',
-    keywords: ['final', 'finals', 'ff'],
-  },
-  playin: {
-    roundType: 'playin',
-    baseNumber: FINAL_BASE - 10,
-    label: 'Play-In',
-    keywords: ['play', 'in', 'playin'],
-  },
-  elimination: {
-    roundType: 'elimination',
-    baseNumber: SEMIFINAL_BASE - 50,
-    label: 'Elimination',
-    keywords: ['elimination', 'elim'],
-  },
-}
-
-// Helper functions
-const getGroup = (match: RegExpMatchArray, idx: number): string | null =>
-  match[idx]?.toUpperCase() || null
-
-const getNum = (match: RegExpMatchArray, idx: number): number | null => {
-  const val = match[idx]
-  return val ? parseInt(val, 10) : null
-}
-
-// Handler factories
-function createRoundHandler(
-  roundIdx: number,
-  groupIdx?: number,
-  gameIdx?: number
-) {
-  return (match: RegExpMatchArray): ParsedGameName => ({
-    group: groupIdx !== undefined ? getGroup(match, groupIdx) : null,
-    round: `Round ${match[roundIdx]}`,
-    roundNumber: getNum(match, roundIdx),
-    gameNumber: gameIdx !== undefined ? getNum(match, gameIdx) : null,
-    isSpecialRound: false,
-    originalName: match[0],
-  })
-}
-
-function createTierHandler(tierIdx: number, gameIdx: number | null) {
-  return (match: RegExpMatchArray): ParsedGameName => {
-    const tierNum = parseInt(match[tierIdx], 10)
-    const gameNum = gameIdx !== null ? parseInt(match[gameIdx], 10) : null
-    return {
-      group: `Tier ${tierNum}`,
-      round: `Tier ${tierNum}`,
-      roundNumber: gameNum ? tierNum * 1000 + gameNum : tierNum * 1000,
-      gameNumber: gameNum,
-      isSpecialRound: true,
-      originalName: match[0],
-    }
-  }
-}
-
-function createSpecialRoundHandler(
-  config: RoundTypeConfig,
-  labelFn: (match: RegExpMatchArray, group: string | null) => string,
-  groupIdx: number = 1,
-  gameIdx?: number
-) {
-  return (match: RegExpMatchArray): ParsedGameName => {
-    const group = getGroup(match, groupIdx)
-    const gameNum = gameIdx !== undefined ? getNum(match, gameIdx) : null
-    return {
-      group,
-      round: labelFn(match, group),
-      roundNumber: gameNum
-        ? config.baseNumber + gameNum - 1
-        : config.baseNumber,
-      gameNumber: gameNum,
-      isSpecialRound: true,
-      originalName: match[0],
-    }
-  }
-}
-
-interface PatternMatcher {
-  pattern: RegExp
-  handler: (match: RegExpMatchArray) => ParsedGameName
-  priority: number
-}
-
-const PATTERN_MATCHERS: PatternMatcher[] = [
-  // Tier patterns
-  {
-    pattern: /^Tier\s+(\d+)\s+G(\d+)$/i,
-    priority: 100,
-    handler: createTierHandler(1, 2),
-  },
-  {
-    pattern: /^T([123])\s+G(\d+)$/i,
-    priority: 99,
-    handler: createTierHandler(1, 2),
-  },
-  {
-    pattern: /^T([123])$/i,
-    priority: 98,
-    handler: createTierHandler(1, null),
-  },
-  // Winter Cup elimination
-  {
-    pattern:
-      /^(Semi|Semifinal|Semifinals|Quarterfinal|Quarterfinals|Play-In|Playin|PreQuarter|Pre-Quarter)\s+([A-Za-z])\s*G\s*(\d+)$/i,
-    priority: 90,
-    handler: (match) => {
-      const roundTypeName = match[1].toLowerCase()
-      const config =
-        Object.values(ROUND_TYPE_CONFIGS).find((cfg) =>
-          cfg.keywords.some((kw) => roundTypeName.includes(kw))
-        ) || null
-      return {
-        group: match[2].toUpperCase(),
-        round: config?.label || 'Unknown Round',
-        roundNumber: config ? config.baseNumber + parseInt(match[3], 10) : 0,
-        gameNumber: parseInt(match[3], 10),
-        isSpecialRound: true,
-        originalName: match[0],
-      }
-    },
-  },
-  // Winter Cup group
-  {
-    pattern: /^([A-Z])(\d+)\s+G(\d+)$/i,
-    priority: 85,
-    handler: createRoundHandler(2, 1, 3),
-  },
-  // Special rounds
-  {
-    pattern: /^(prequarter|pre-quarter)\s*([a-z])?$/i,
-    priority: 80,
-    handler: createSpecialRoundHandler(
-      ROUND_TYPE_CONFIGS.prequarter,
-      (_, group) => `PreQuarter${group ? ` ${group}` : ''}`,
-      2
-    ),
-  },
-  {
-    pattern: /^q([fe])(\d+)$/i,
-    priority: 75,
-    handler: (match) => ({
-      group: null,
-      round: `${match[1].toUpperCase() === 'F' ? 'QF' : 'QE'}${match[2]}`,
-      roundNumber: QUARTERFINAL_BASE + parseInt(match[2], 10) - 1,
-      gameNumber: parseInt(match[2], 10),
-      isSpecialRound: true,
-      originalName: match[0],
-    }),
-  },
-  {
-    pattern: /^(quarterfinal|quarterfinals|quarter\s+final)\s*([a-z])?$/i,
-    priority: 70,
-    handler: createSpecialRoundHandler(
-      ROUND_TYPE_CONFIGS.quarterfinals,
-      (_, group) => `Quarterfinal${group ? ` ${group}` : ''}`,
-      2
-    ),
-  },
-  {
-    pattern: /^semi\s*([a-z])(\d+)$/i,
-    priority: 65,
-    handler: (match) => ({
-      group: match[1].toUpperCase(),
-      round: `Semi ${match[1].toUpperCase()}${match[2]}`,
-      roundNumber: SEMIFINAL_BASE + parseInt(match[2], 10) - 1,
-      gameNumber: parseInt(match[2], 10),
-      isSpecialRound: true,
-      originalName: match[0],
-    }),
-  },
-  {
-    pattern: /^semi\s*(\d+)$/i,
-    priority: 64,
-    handler: createSpecialRoundHandler(
-      ROUND_TYPE_CONFIGS.semifinals,
-      (match) => `Semi ${match[1]}`,
-      undefined,
-      1
-    ),
-  },
-  {
-    pattern: /^(semifinal|semifinals|semi\s+final|semi)\s*([a-z])?$/i,
-    priority: 63,
-    handler: createSpecialRoundHandler(
-      ROUND_TYPE_CONFIGS.semifinals,
-      (_, group) => `Semifinal${group ? ` ${group}` : ''}`,
-      2
-    ),
-  },
-  {
-    pattern: /^s([fe])(\d+)$/i,
-    priority: 62,
-    handler: (match) => ({
-      group: null,
-      round: `${match[1].toUpperCase() === 'F' ? 'SF' : 'SE'}${match[2]}`,
-      roundNumber: SEMIFINAL_BASE + parseInt(match[2], 10) - 1,
-      gameNumber: parseInt(match[2], 10),
-      isSpecialRound: true,
-      originalName: match[0],
-    }),
-  },
-  {
-    pattern: /^ff(\d+)$/i,
-    priority: 60,
-    handler: createSpecialRoundHandler(
-      ROUND_TYPE_CONFIGS.finals,
-      (match) => `FF${match[1]}`,
-      undefined,
-      1
-    ),
-  },
-  {
-    pattern: /^finals?\s*([a-z])(\d+)$/i,
-    priority: 59,
-    handler: (match) => ({
-      group: match[1].toUpperCase(),
-      round: `Finals ${match[1].toUpperCase()}${match[2]}`,
-      roundNumber: FINAL_BASE + parseInt(match[2], 10) - 1,
-      gameNumber: parseInt(match[2], 10),
-      isSpecialRound: true,
-      originalName: match[0],
-    }),
-  },
-  {
-    pattern: /^finals?\s*(\d+)$/i,
-    priority: 58,
-    handler: createSpecialRoundHandler(
-      ROUND_TYPE_CONFIGS.finals,
-      (match) => `Finals ${match[1]}`,
-      undefined,
-      1
-    ),
-  },
-  {
-    pattern: /^(final|finals)\s*([a-z])?$/i,
-    priority: 57,
-    handler: createSpecialRoundHandler(
-      ROUND_TYPE_CONFIGS.finals,
-      (_, group) => `Final${group ? ` ${group}` : ''}`,
-      2
-    ),
-  },
-  {
-    pattern: /^elimination\s+(\d+)([a-z])$/i,
-    priority: 55,
-    handler: (match) => ({
-      group: match[2].toUpperCase(),
-      round: `Elimination ${match[1]}${match[2].toLowerCase()}`,
-      roundNumber: SEMIFINAL_BASE - 50 + parseInt(match[1], 10),
-      gameNumber: parseInt(match[1], 10),
-      isSpecialRound: true,
-      originalName: match[0],
-    }),
-  },
-  {
-    pattern: /^elim\s+([a-z])$/i,
-    priority: 54,
-    handler: createSpecialRoundHandler(
-      ROUND_TYPE_CONFIGS.elimination,
-      (_, group) => `Elim ${group || ''}`,
-      1
-    ),
-  },
-  {
-    pattern: /^(play\s*-?\s*in|playin)$/i,
-    priority: 53,
-    handler: createSpecialRoundHandler(
-      ROUND_TYPE_CONFIGS.playin,
-      () => 'Play In'
-    ),
-  },
-  // Standard rounds
-  {
-    pattern: /^R(\d+)\s+([a-z])(\d+)$/i,
-    priority: 50,
-    handler: createRoundHandler(1, 2, 3),
-  },
-  {
-    pattern: /^R(\d+)\s+([a-z])$/i,
-    priority: 49,
-    handler: createRoundHandler(1, 2),
-  },
-  {
-    pattern: /^R(\d+)(?:\s+T(\d+))?$/i,
-    priority: 48,
-    handler: (match) => ({
-      group: match[2] ? `T${match[2]}` : null,
-      round: `Round ${match[1]}${match[2] ? ` - Table ${match[2]}` : ''}`,
-      roundNumber: parseInt(match[1], 10),
-      gameNumber: null,
-      isSpecialRound: false,
-      originalName: match[0],
-    }),
-  },
-  // Table patterns (T4+)
-  {
-    pattern: /^T([4-9]|[1-9]\d+)\s+G(\d+)$/i,
-    priority: 40,
-    handler: (match) => ({
-      group: `T${match[1]}`,
-      round: `Game ${match[2]}`,
-      roundNumber: parseInt(match[2], 10),
-      gameNumber: parseInt(match[2], 10),
-      isSpecialRound: false,
-      originalName: match[0],
-    }),
-  },
-  {
-    pattern: /^T([4-9]|[1-9]\d+)$/i,
-    priority: 39,
-    handler: (match) => ({
-      group: `T${match[1]}`,
-      round: `Table ${match[1]}`,
-      roundNumber: null,
-      gameNumber: null,
-      isSpecialRound: false,
-      originalName: match[0],
-    }),
-  },
-  // Group patterns
-  {
-    pattern: /^(?:group\s*)?([a-z]+)(\d+)$/i,
-    priority: 30,
-    handler: createRoundHandler(2, 1),
-  },
-]
-
-export function parseGameName(gameName: string | null): ParsedGameName {
-  if (!gameName) {
-    return {
-      group: null,
-      round: null,
-      roundNumber: null,
-      gameNumber: null,
-      isSpecialRound: false,
-      originalName: gameName || '',
-    }
-  }
-
-  const normalized = gameName.trim()
-  const sortedMatchers = [...PATTERN_MATCHERS].sort(
-    (a, b) => b.priority - a.priority
-  )
-
-  for (const matcher of sortedMatchers) {
-    const match = normalized.match(matcher.pattern)
-    if (match) {
-      return { ...matcher.handler(match), originalName: gameName }
-    }
-  }
-
-  return {
-    group: null,
-    round: normalized,
-    roundNumber: null,
-    gameNumber: null,
-    isSpecialRound: false,
-    originalName: gameName,
-  }
-}
-
-export function getRoundType(parsed: ParsedGameName): RoundType {
-  if (parsed.group?.startsWith('Tier ')) return 'tier'
-  if (parsed.isSpecialRound) {
-    const lower = parsed.originalName.toLowerCase()
-    for (const config of Object.values(ROUND_TYPE_CONFIGS)) {
-      if (config.keywords.some((kw) => lower.includes(kw))) {
-        return config.roundType
-      }
-    }
-  }
-  if (parsed.group && parsed.roundNumber !== null) return 'group'
-  return 'unknown'
-}
-
-export function getRoundSortKey(parsed: ParsedGameName): number {
-  if (parsed.group?.startsWith('Tier ')) {
-    const tierMatch = parsed.group.match(/Tier\s+(\d+)/i)
-    if (tierMatch) return 20 + parseInt(tierMatch[1], 10) * 10
-  }
-  if (parsed.isSpecialRound && parsed.roundNumber !== null)
-    return parsed.roundNumber
-  if (parsed.roundNumber !== null) return parsed.roundNumber
-  return UNKNOWN_ROUND_SORT_KEY
+export interface ParsedGame {
+  sectionKey: string
+  sectionLabel: string
+  displayName: string
+  sortOrder: number
 }
 
 export interface GameWithParsedName {
   id: number
   name: string | null
-  parsed: ParsedGameName
+  parsed: ParsedGame
   participants: Array<{
     player: { id: number; username: string }
     ranking: number | null
@@ -454,213 +20,392 @@ export interface GameWithParsedName {
   }>
 }
 
-export interface RoundGroup {
-  roundKey: string
-  roundLabel: string
-  roundType: RoundType
-  sortKey: number
+export interface SectionGroup {
+  sectionKey: string
+  sectionLabel: string
+  sortOrder: number
   games: GameWithParsedName[]
 }
 
-const ROUND_LABELS: Record<RoundType, string> = {
-  finals: 'Finals',
-  semifinals: 'Semifinals',
-  quarterfinals: 'Quarterfinals',
-  prequarter: 'PreQuarters',
-  playin: 'Play-In',
-  elimination: 'Elimination',
-  tier: 'Tier',
-  group: 'Round',
-  unknown: 'Unknown',
+/**
+ * Detects tournament format based on event name
+ */
+export function detectFormat(eventName: string | null): TournamentFormat {
+  if (!eventName) return 'tournament'
+  const lower = eventName.toLowerCase()
+  if (lower.includes('league')) return 'league'
+  if (lower.includes('1v1')) return '1v1'
+  return 'tournament'
 }
 
-const GROUPED_ROUND_TYPES: RoundType[] = [
-  'finals',
-  'semifinals',
-  'quarterfinals',
-  'playin',
-  'prequarter',
-]
+/**
+ * Parses a game name into section and display information
+ */
+export function parseGameName(
+  gameName: string | null,
+  format: TournamentFormat
+): ParsedGame {
+  if (!gameName) {
+    return {
+      sectionKey: 'unknown',
+      sectionLabel: 'Unknown',
+      displayName: 'Unnamed',
+      sortOrder: 9999,
+    }
+  }
 
-function getRoundKeyAndLabel(
-  parsed: ParsedGameName,
-  roundType: RoundType
-): { roundKey: string; roundLabel: string } {
-  if (roundType === 'tier') {
-    const tierMatch = parsed.group?.match(/Tier\s+(\d+)/i)
-    return tierMatch
-      ? { roundKey: `tier-${tierMatch[1]}`, roundLabel: `Tier ${tierMatch[1]}` }
-      : { roundKey: 'tier-unknown', roundLabel: 'Tier' }
+  const name = gameName.trim()
+
+  if (format === 'league') {
+    return parseLeagueGameName(name)
+  } else if (format === '1v1') {
+    return parse1v1GameName(name)
+  } else {
+    return parseTournamentGameName(name)
   }
-  if (GROUPED_ROUND_TYPES.includes(roundType)) {
-    return { roundKey: roundType, roundLabel: ROUND_LABELS[roundType] }
-  }
-  if (parsed.isSpecialRound) {
+}
+
+/**
+ * Parses league format: T1 G1, T2 G1, Tier 1 G1, etc.
+ */
+function parseLeagueGameName(name: string): ParsedGame {
+  // Tier 1 G1, Tier 2 G1, etc.
+  const tierMatch = name.match(/^Tier\s+(\d+)\s+G(\d+)$/i)
+  if (tierMatch) {
+    const tier = parseInt(tierMatch[1], 10)
+    const game = parseInt(tierMatch[2], 10)
     return {
-      roundKey: parsed.round?.toLowerCase() || 'unknown',
-      roundLabel: parsed.round || 'Unknown Round',
+      sectionKey: `tier-${tier}`,
+      sectionLabel: `Tier ${tier}`,
+      displayName: `G${game}`,
+      sortOrder: tier * 1000 + game,
     }
   }
-  if (parsed.roundNumber !== null) {
+
+  // T1 G1, T2 G1, T3 G29, etc.
+  const tMatch = name.match(/^T([123])\s+G(\d+)$/i)
+  if (tMatch) {
+    const tier = parseInt(tMatch[1], 10)
+    const game = parseInt(tMatch[2], 10)
     return {
-      roundKey: `round-${parsed.roundNumber}`,
-      roundLabel: parsed.round || `Round ${parsed.roundNumber}`,
+      sectionKey: `tier-${tier}`,
+      sectionLabel: `Tier ${tier}`,
+      displayName: `G${game}`,
+      sortOrder: tier * 1000 + game,
     }
   }
+
+  // Fallback for league format
   return {
-    roundKey: parsed.originalName.toLowerCase(),
-    roundLabel: parsed.originalName || 'Unknown',
+    sectionKey: 'unknown',
+    sectionLabel: 'Unknown',
+    displayName: name,
+    sortOrder: 9999,
   }
 }
 
-export function groupGamesByRound(games: GameWithParsedName[]): RoundGroup[] {
-  const roundMap = new Map<string, RoundGroup>()
+/**
+ * Parses 1v1 format: G1, G2, G3, etc. - all games in a single section
+ */
+function parse1v1GameName(name: string): ParsedGame {
+  // G1, G2, G3, etc. - all go into a single "Games" section
+  const gameMatch = name.match(/^G(\d+)$/i)
+  if (gameMatch) {
+    const gameNum = parseInt(gameMatch[1], 10)
+    return {
+      sectionKey: 'games',
+      sectionLabel: 'Games',
+      displayName: `G${gameNum}`,
+      sortOrder: gameNum,
+    }
+  }
+
+  // Fallback for 1v1 format
+  return {
+    sectionKey: 'games',
+    sectionLabel: 'Games',
+    displayName: name,
+    sortOrder: 9999,
+  }
+}
+
+/**
+ * Parses tournament format: rounds, elimination rounds, etc.
+ */
+function parseTournamentGameName(name: string): ParsedGame {
+  // Regular rounds: R1 A1, R2 A1, R1 A2, etc.
+  // Check these FIRST so they get lower sortOrder values
+  const roundMatch = name.match(/^R(\d+)\s+([A-Z])(\d+)$/i)
+  if (roundMatch) {
+    const roundNum = parseInt(roundMatch[1], 10)
+    const group = roundMatch[2].toUpperCase()
+    const gameNum = parseInt(roundMatch[3], 10)
+    // Use group letter code for sorting within round
+    // Regular rounds: 0-99999 range (assuming max 20 rounds)
+    const groupCode = group.charCodeAt(0) - 64
+    return {
+      sectionKey: `round-${roundNum}`,
+      sectionLabel: `Round ${roundNum}`,
+      displayName: `${group}${gameNum}`,
+      sortOrder: roundNum * 1000 + groupCode * 10 + gameNum,
+    }
+  }
+
+  // Simple rounds: A1, B1, A2, etc. (letter = group, number = round)
+  const simpleRoundMatch = name.match(/^([A-Z])(\d+)$/i)
+  if (simpleRoundMatch) {
+    const group = simpleRoundMatch[1].toUpperCase()
+    const roundNum = parseInt(simpleRoundMatch[2], 10)
+    // Use group letter code (A=1, B=2, etc.) for sorting within round
+    // Regular rounds: 0-99999 range (assuming max 20 rounds)
+    const groupCode = group.charCodeAt(0) - 64
+    return {
+      sectionKey: `round-${roundNum}`,
+      sectionLabel: `Round ${roundNum}`,
+      displayName: group,
+      sortOrder: roundNum * 1000 + groupCode,
+    }
+  }
+
+  // All elimination rounds start at 100000 to ensure they come after all regular rounds
+  const ELIMINATION_BASE = 100000
+
+  // SF PLAYIN 1, FF PLAYIN 1
+  // These come BEFORE their respective rounds (SF Playin before Semifinals, FF Playin before Finals)
+  const playinMatch = name.match(/^(SF|FF)\s+PLAYIN\s+(\d+)$/i)
+  if (playinMatch) {
+    const prefix = playinMatch[1].toUpperCase()
+    const gameNum = parseInt(playinMatch[2], 10)
+    return {
+      sectionKey: `${prefix}-playin`,
+      sectionLabel: prefix === 'SF' ? 'Semifinals Playin' : 'Finals Playin',
+      displayName: `Game ${gameNum}`, // Display as "Game [n]" instead of just the number
+      sortOrder:
+        prefix === 'SF'
+          ? ELIMINATION_BASE + 2000 + gameNum
+          : ELIMINATION_BASE + 3000 + gameNum,
+    }
+  }
+
+  // Standalone PI (Play-In)
+  const piMatch = name.match(/^PI$/i)
+  if (piMatch) {
+    return {
+      sectionKey: 'playin',
+      sectionLabel: 'Play-In',
+      displayName: 'Game 1',
+      sortOrder: ELIMINATION_BASE + 2000,
+    }
+  }
+
+  // ELIM A, ELIM A2, ELIM 1 A
+  const elimMatch1 = name.match(/^ELIM\s+([A-Z])(\d+)$/i)
+  if (elimMatch1) {
+    const group = elimMatch1[1].toUpperCase()
+    const num = parseInt(elimMatch1[2], 10)
+    return {
+      sectionKey: 'elimination',
+      sectionLabel: 'Elimination',
+      displayName: `${group}${num}`,
+      sortOrder: ELIMINATION_BASE + 1500 + num,
+    }
+  }
+
+  const elimMatch2 = name.match(/^ELIM\s+(\d+)\s+([A-Z])$/i)
+  if (elimMatch2) {
+    const num = parseInt(elimMatch2[1], 10)
+    const group = elimMatch2[2].toUpperCase()
+    return {
+      sectionKey: 'elimination',
+      sectionLabel: 'Elimination',
+      displayName: `${group}${num}`,
+      sortOrder: ELIMINATION_BASE + 1500 + num,
+    }
+  }
+
+  const elimMatch3 = name.match(/^ELIM\s+([A-Z])$/i)
+  if (elimMatch3) {
+    const group = elimMatch3[1].toUpperCase()
+    return {
+      sectionKey: 'elimination',
+      sectionLabel: 'Elimination',
+      displayName: group,
+      sortOrder: ELIMINATION_BASE + 1500,
+    }
+  }
+
+  // PreQuarters: PQ A, PreQuarter A
+  const pqMatch = name.match(/^(PQ|PreQuarter)\s+([A-Z])$/i)
+  if (pqMatch) {
+    const group = pqMatch[2].toUpperCase()
+    return {
+      sectionKey: 'pre-quarters',
+      sectionLabel: 'Pre-Quarters',
+      displayName: group,
+      sortOrder: ELIMINATION_BASE + 500,
+    }
+  }
+
+  // Quarterfinals: QF 1, QF A, QF A 1
+  const qfMatch1 = name.match(/^QF\s+(\d+)$/i)
+  if (qfMatch1) {
+    const num = parseInt(qfMatch1[1], 10)
+    return {
+      sectionKey: 'quarterfinals',
+      sectionLabel: 'Quarterfinals',
+      displayName: `Game ${num}`,
+      sortOrder: ELIMINATION_BASE + 1000 + num,
+    }
+  }
+
+  const qfMatch2 = name.match(/^QF\s+([A-Z])\s+(\d+)$/i)
+  if (qfMatch2) {
+    const group = qfMatch2[1].toUpperCase()
+    const num = parseInt(qfMatch2[2], 10)
+    return {
+      sectionKey: 'quarterfinals',
+      sectionLabel: 'Quarterfinals',
+      displayName: `${group}${num}`,
+      sortOrder: ELIMINATION_BASE + 1000 + num,
+    }
+  }
+
+  const qfMatch3 = name.match(/^QF\s+([A-Z])$/i)
+  if (qfMatch3) {
+    const group = qfMatch3[1].toUpperCase()
+    return {
+      sectionKey: 'quarterfinals',
+      sectionLabel: 'Quarterfinals',
+      displayName: group,
+      sortOrder: ELIMINATION_BASE + 1000,
+    }
+  }
+
+  // Semifinals: SF 1, SF A, SF A 1
+  // These come AFTER Semifinals Playin (2500)
+  const sfMatch1 = name.match(/^SF\s+(\d+)$/i)
+  if (sfMatch1) {
+    const num = parseInt(sfMatch1[1], 10)
+    return {
+      sectionKey: 'semifinals',
+      sectionLabel: 'Semifinals',
+      displayName: `Game ${num}`,
+      sortOrder: ELIMINATION_BASE + 2500 + num,
+    }
+  }
+
+  const sfMatch2 = name.match(/^SF\s+([A-Z])\s+(\d+)$/i)
+  if (sfMatch2) {
+    const group = sfMatch2[1].toUpperCase()
+    const num = parseInt(sfMatch2[2], 10)
+    return {
+      sectionKey: 'semifinals',
+      sectionLabel: 'Semifinals',
+      displayName: `${group}${num}`,
+      sortOrder: ELIMINATION_BASE + 2500 + num,
+    }
+  }
+
+  const sfMatch3 = name.match(/^SF\s+([A-Z])$/i)
+  if (sfMatch3) {
+    // If it's just "SF A" (letter only, no number), display as "Game 1"
+    // If it's "SF A 1", it's already handled by sfMatch2 and displays as "A1"
+    return {
+      sectionKey: 'semifinals',
+      sectionLabel: 'Semifinals',
+      displayName: 'Game 1',
+      sortOrder: ELIMINATION_BASE + 2500,
+    }
+  }
+
+  // Finals: FF, F, FF A 1, F 1
+  // These come AFTER Finals Playin (3500)
+  const fMatch1 = name.match(/^(FF|F)$/i)
+  if (fMatch1) {
+    return {
+      sectionKey: 'finals',
+      sectionLabel: 'Finals',
+      displayName: 'Game 1', // Display as "Game 1" instead of "FF" or "F"
+      sortOrder: ELIMINATION_BASE + 3500,
+    }
+  }
+
+  const fMatch2 = name.match(/^(FF|F)\s+(\d+)$/i)
+  if (fMatch2) {
+    const num = parseInt(fMatch2[2], 10)
+    return {
+      sectionKey: 'finals',
+      sectionLabel: 'Finals',
+      displayName: `Game ${num}`,
+      sortOrder: ELIMINATION_BASE + 3500 + num,
+    }
+  }
+
+  const fMatch3 = name.match(/^(FF|F)\s+([A-Z])\s+(\d+)$/i)
+  if (fMatch3) {
+    const group = fMatch3[2].toUpperCase()
+    const num = parseInt(fMatch3[3], 10)
+    return {
+      sectionKey: 'finals',
+      sectionLabel: 'Finals',
+      displayName: `${group}${num}`,
+      sortOrder: ELIMINATION_BASE + 3500 + num,
+    }
+  }
+
+  // Fallback
+  return {
+    sectionKey: 'unknown',
+    sectionLabel: 'Unknown',
+    displayName: name,
+    sortOrder: 9999,
+  }
+}
+
+/**
+ * Groups games by section
+ */
+export function groupGamesBySection(
+  games: GameWithParsedName[]
+): SectionGroup[] {
+  const sectionMap = new Map<string, SectionGroup>()
 
   for (const game of games) {
-    const roundType = getRoundType(game.parsed)
-    const { roundKey, roundLabel } = getRoundKeyAndLabel(game.parsed, roundType)
+    const { sectionKey, sectionLabel, sortOrder } = game.parsed
 
-    if (!roundMap.has(roundKey)) {
-      roundMap.set(roundKey, {
-        roundKey,
-        roundLabel,
-        roundType,
-        sortKey: getRoundSortKey(game.parsed),
+    if (!sectionMap.has(sectionKey)) {
+      sectionMap.set(sectionKey, {
+        sectionKey,
+        sectionLabel,
+        sortOrder,
         games: [],
       })
     }
 
-    roundMap.get(roundKey)!.games.push(game)
+    sectionMap.get(sectionKey)!.games.push(game)
   }
 
-  const rounds = Array.from(roundMap.values())
-  const typeOrder: Record<RoundType, number> = {
-    group: 1,
-    tier: 2,
-    prequarter: 3,
-    quarterfinals: 4,
-    elimination: 5,
-    semifinals: 6,
-    playin: 7,
-    finals: 8,
-    unknown: 9,
-  }
+  const sections = Array.from(sectionMap.values())
 
-  rounds.sort((a, b) => {
-    const typeDiff = typeOrder[a.roundType] - typeOrder[b.roundType]
-    if (typeDiff !== 0) return typeDiff
-    if (a.sortKey !== b.sortKey) return a.sortKey - b.sortKey
-    return a.roundKey.localeCompare(b.roundKey)
+  // Sort sections by sortOrder
+  sections.sort((a, b) => {
+    if (a.sortOrder !== b.sortOrder) {
+      return a.sortOrder - b.sortOrder
+    }
+    return a.sectionKey.localeCompare(b.sectionKey)
   })
 
-  return rounds
-}
-
-export function getGameDisplayName(
-  game: GameWithParsedName,
-  roundLabel: string
-): string {
-  if (!game.name) return `Game ${game.id}`
-
-  const parsed = game.parsed
-  const originalName = game.name.trim()
-  const roundType = getRoundType(parsed)
-
-  // Tier handling
-  if (roundType === 'tier') {
-    const gMatch = originalName.match(/G(\d+)$/i)
-    if (gMatch) return `G${gMatch[1]}`
-    if (parsed.gameNumber) return `G${parsed.gameNumber}`
-    if (parsed.roundNumber) {
-      const gameNum = parsed.roundNumber % 1000
-      if (gameNum > 0) return `G${gameNum}`
-    }
-    return originalName
+  // Sort games within each section
+  for (const section of sections) {
+    section.games.sort((a, b) => {
+      if (a.parsed.sortOrder !== b.parsed.sortOrder) {
+        return a.parsed.sortOrder - b.parsed.sortOrder
+      }
+      return (a.parsed.displayName || '').localeCompare(
+        b.parsed.displayName || ''
+      )
+    })
   }
 
-  // Finals handling
-  if (roundType === 'finals' && roundLabel === 'Finals') {
-    const numMatch = originalName.match(/(\d+)$/)
-    const num = numMatch ? parseInt(numMatch[1], 10) : parsed.gameNumber
-    if (num) return `Game ${num}`
-    if (parsed.roundNumber) {
-      const gameNum = parsed.roundNumber - FINAL_BASE + 1
-      if (gameNum > 0) return `Game ${gameNum}`
-    }
-    return originalName
-  }
-
-  // Special rounds
-  if (
-    roundType === 'semifinals' ||
-    roundType === 'quarterfinals' ||
-    roundType === 'playin' ||
-    roundType === 'prequarter'
-  ) {
-    // Winter Cup elimination: "Semi A G1" -> "A G1"
-    const winterCupElim = originalName.match(
-      /^(?:Semi|Semifinal|Quarterfinal|Quarterfinals|Play-In|Playin|PreQuarter|Pre-Quarter)\s+([A-Z])\s+G(\d+)$/i
-    )
-    if (winterCupElim) return `${winterCupElim[1]} G${winterCupElim[2]}`
-
-    // Group + number: "Semi A1" -> "A1"
-    const groupNum = originalName.match(/([A-Z])\s*(\d+)$/i)
-    if (groupNum) return groupNum[1] + groupNum[2]
-
-    // Middle pattern: "Semi A1"
-    const middle = originalName.match(/\s+([A-Z])(\d+)(?:\s|$)/i)
-    if (middle) return middle[1] + middle[2]
-
-    // Use parsed group
-    if (parsed.group && parsed.group.length === 1) {
-      const numMatch = originalName.match(/(\d+)/)
-      if (numMatch) return parsed.group + numMatch[1]
-      return parsed.group
-    }
-
-    // Abbreviations: "QF1" -> "1"
-    const abbrev = originalName.match(/^(QF|SF|QE|SE|FF)(\d+)$/i)
-    if (abbrev) return abbrev[2]
-
-    // Fallback: number
-    const numMatch = originalName.match(/(\d+)$/)
-    if (numMatch) return numMatch[1]
-  }
-
-  // Winter Cup: "A1 G1" under "Round 1" -> "A G1"
-  const winterCup = originalName.match(/^([A-Z])(\d+)\s+G(\d+)$/i)
-  if (winterCup) {
-    const roundMatch = roundLabel.match(/Round\s+(\d+)/i)
-    if (roundMatch && roundMatch[1] === winterCup[2]) {
-      return `${winterCup[1]} G${winterCup[3]}`
-    }
-  }
-
-  // Round prefix: "R1 A1" under "Round 1" -> "A1"
-  const roundPrefix = originalName.match(/^R(\d+)\s+(.+)$/i)
-  if (roundPrefix) {
-    const roundMatch = roundLabel.match(/Round\s+(\d+)/i)
-    if (roundMatch && roundMatch[1] === roundPrefix[1]) {
-      return roundPrefix[2].trim()
-    }
-  }
-
-  // Table-only games
-  if (
-    parsed.group?.startsWith('T') &&
-    (parsed.round?.includes('Table') || roundLabel.includes('Table'))
-  ) {
-    return parsed.group
-  }
-
-  // Group + number: "A1", "B2"
-  if (parsed.group && parsed.roundNumber !== null) {
-    const groupMatch = originalName.match(/^([a-z])(\d+)$/i)
-    if (groupMatch) {
-      return groupMatch[1].toUpperCase() + groupMatch[2]
-    }
-    return parsed.group + parsed.roundNumber
-  }
-
-  return originalName
+  return sections
 }
