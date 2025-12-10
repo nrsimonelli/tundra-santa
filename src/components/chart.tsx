@@ -28,11 +28,7 @@ type TooltipProps = {
   payload?: TooltipPayload[]
 }
 
-export function Chart({
-  data,
-}: {
-  data: ChartDataPoint[]
-}) {
+export function Chart({ data }: { data: ChartDataPoint[] }) {
   // override console.error
   // this is a hack to suppress the warning about missing defaultProps in recharts as of version 2.12
   const originalError = console.error
@@ -46,7 +42,9 @@ export function Chart({
       const dataPoint = payload[0].payload
       return (
         <div className='bg-background border border-border rounded-md p-2 shadow-md'>
-          <p className='font-semibold'>{dataPoint.fullName || dataPoint.name}</p>
+          <p className='font-semibold'>
+            {dataPoint.fullName || dataPoint.name}
+          </p>
           <p className='text-sm text-muted-foreground'>
             Rating: {dataPoint.rating}
           </p>

@@ -1,6 +1,6 @@
 import { getCachedPlayer } from '@/lib/supabase/cached-queries'
 import Link from 'next/link'
-import { removeYearFromEventName } from '@/lib/utils'
+import { removeYearFromEventName, getNumericDate } from '@/lib/utils'
 import { Chart } from '@/components/chart'
 import { sortByEventDate, getMostRecentEvent } from '@/lib/events'
 import EventLink from '@/components/event-link'
@@ -53,10 +53,16 @@ export default async function PlayerProfile({
 
   const chartData = event_participation
     .filter((entry: (typeof event_participation)[0]) => isRatingEvent(entry))
-    .map((entry: (typeof event_participation)[0]) => {
+    .map((entry: (typeof event_participation)[0], index: number) => {
+      const startDate = entry.event?.start_date
+      // start_date is string | null from the database, getNumericDate handles null
+      const formattedDate = startDate ? getNumericDate(startDate) : 'unknown'
       return {
+        // Use index as unique identifier to prevent overlapping data points
+        id: index,
         name: removeYearFromEventName(entry.event?.name ?? null),
-        date: entry.event?.start_date?.toLocaleString() ?? 'unknown',
+        fullName: entry.event?.name ?? '',
+        date: formattedDate,
         rating: isOrdinal(entry.ordinal) ? Math.round(entry.ordinal) : 1200,
       }
     })
