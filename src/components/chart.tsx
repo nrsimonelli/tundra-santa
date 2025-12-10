@@ -9,17 +9,58 @@ import {
   Tooltip,
 } from 'recharts'
 
+type ChartDataPoint = {
+  id: number
+  name: string
+  fullName: string
+  date: string
+  rating: number
+}
+
+type TooltipPayload = {
+  payload: ChartDataPoint
+  value: number
+  name: string
+}
+
+type TooltipProps = {
+  active?: boolean
+  payload?: TooltipPayload[]
+}
+
 export function Chart({
   data,
 }: {
-  data: { name: string; date: string; rating: number }[]
+  data: ChartDataPoint[]
 }) {
   // override console.error
   // this is a hack to suppress the warning about missing defaultProps in recharts as of version 2.12
-  const error = console.error
-  console.error = (...args: any) => {
-    if (/defaultProps/.test(args[0])) return
-    error(...args)
+  const originalError = console.error
+  console.error = (...args: unknown[]) => {
+    if (typeof args[0] === 'string' && /defaultProps/.test(args[0])) return
+    originalError(...args)
+  }
+
+  const CustomTooltip = ({ active, payload }: TooltipProps) => {
+    if (active && payload && payload.length > 0) {
+      const dataPoint = payload[0].payload
+      return (
+        <div className='bg-background border border-border rounded-md p-2 shadow-md'>
+          <p className='font-semibold'>{dataPoint.fullName || dataPoint.name}</p>
+          <p className='text-sm text-muted-foreground'>
+            Rating: {dataPoint.rating}
+          </p>
+          <p className='text-sm text-muted-foreground'>{dataPoint.date}</p>
+        </div>
+      )
+    }
+    return null
+  }
+
+  // Create a formatter function that uses the data array
+  const formatTick = (value: number) => {
+    const dataPoint = data[value]
+    return dataPoint?.name || ''
   }
 
   return (
@@ -32,11 +73,12 @@ export function Chart({
           </linearGradient>
         </defs>
         <XAxis
-          dataKey='name'
+          dataKey='id'
           stroke='#888888'
           tickLine={false}
           axisLine={false}
           fontSize={12}
+          tickFormatter={formatTick}
         />
         <YAxis
           stroke='#888888'
@@ -48,7 +90,7 @@ export function Chart({
             (dataMax: number) => (dataMax > 2000 ? dataMax + 100 : 2000),
           ]}
         />
-        <Tooltip />
+        <Tooltip content={<CustomTooltip />} />
         <Area
           type='monotone'
           dataKey='rating'

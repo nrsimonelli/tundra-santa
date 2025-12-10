@@ -5,6 +5,7 @@ import {
 } from '@/lib/tournament'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
+import { Crown } from 'lucide-react'
 
 interface TournamentBracketProps {
   rounds: RoundGroup[]
@@ -90,6 +91,21 @@ function RoundSection({ roundGroup }: { roundGroup: RoundGroup }) {
 
     // For regular rounds: sort by round number, then by group/number
     if (roundGroup.roundType === 'group') {
+      // Handle "A1", "B1", "A2", "B2" format: sort by group letter first, then by number
+      const groupNumMatchA = displayA.match(/^([A-Z])(\d+)$/i)
+      const groupNumMatchB = displayB.match(/^([A-Z])(\d+)$/i)
+
+      if (groupNumMatchA && groupNumMatchB) {
+        const groupA = groupNumMatchA[1].toUpperCase()
+        const groupB = groupNumMatchB[1].toUpperCase()
+        if (groupA !== groupB) {
+          return groupA.localeCompare(groupB)
+        }
+        const numA = parseInt(groupNumMatchA[2])
+        const numB = parseInt(groupNumMatchB[2])
+        return numA - numB
+      }
+
       // Handle Winter Cup format: "A G1", "B G1", "A G2", etc.
       // Sort by group letter first, then by game number
       const winterCupMatchA = displayA.match(/^([A-Z])\s+G(\d+)$/i)
@@ -265,9 +281,7 @@ function GameCard({
                       </span>
                     )}
                     {isWinner && (
-                      <span className='text-xs text-primary font-semibold whitespace-nowrap'>
-                        Winner
-                      </span>
+                      <Crown className='h-3 w-3 text-primary flex-shrink-0' />
                     )}
                   </div>
                   <div className='mt-1 space-y-0.5'>
