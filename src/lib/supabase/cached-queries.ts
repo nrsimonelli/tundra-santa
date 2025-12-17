@@ -52,9 +52,8 @@ export async function getCachedPlayer(username: string) {
 }
 
 export type NemesisRecord = {
-  oddsratio: number
-  oddsratioMax: number
   playerId: number
+  score: number
   username: string
   wins: number
   losses: number
@@ -135,9 +134,8 @@ export async function getCachedPlayerNemesis(
 
       // Filter to minimum 5 encounters and calculate scores
       const candidates: {
-        oddsratio: number
-        oddsratioMax: number
         playerId: number
+        score: number
         wins: number
         losses: number
         draws: number
@@ -145,15 +143,14 @@ export async function getCachedPlayerNemesis(
         mostRecentGame: string
       }[] = []
 
-      records.forEach((record, oddsratio) => {
+      records.forEach((record, opponentId) => {
         const totalGames = record.wins + record.losses + record.draws
         if (totalGames < 5) return
 
-        const oddsratioMax = record.wins * record.losses + record.draws
+        const score = record.wins * record.losses + record.draws
         candidates.push({
-          oddsratio,
-          oddsratioMax,
-          playerId: oddsratio,
+          playerId: opponentId,
+          score,
           wins: record.wins,
           losses: record.losses,
           draws: record.draws,
@@ -166,7 +163,7 @@ export async function getCachedPlayerNemesis(
 
       // Sort by score desc, then total games desc, then most recent desc
       candidates.sort((a, b) => {
-        if (b.oddsratioMax !== a.oddsratioMax) return b.oddsratioMax - a.oddsratioMax
+        if (b.score !== a.score) return b.score - a.score
         if (b.totalGames !== a.totalGames) return b.totalGames - a.totalGames
         return b.mostRecentGame.localeCompare(a.mostRecentGame)
       })
