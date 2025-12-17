@@ -14,6 +14,7 @@ type ChartDataPoint = {
   name: string
   fullName: string
   date: string
+  timestamp: number
   rating: number
 }
 
@@ -37,6 +38,9 @@ export function Chart({ data }: { data: ChartDataPoint[] }) {
     originalError(...args)
   }
 
+  // Sort data chronologically by timestamp
+  const sortedData = [...data].sort((a, b) => a.timestamp - b.timestamp)
+
   const CustomTooltip = ({ active, payload }: TooltipProps) => {
     if (active && payload && payload.length > 0) {
       const dataPoint = payload[0].payload
@@ -55,15 +59,16 @@ export function Chart({ data }: { data: ChartDataPoint[] }) {
     return null
   }
 
-  // Create a formatter function that uses the data array
-  const formatTick = (value: number) => {
-    const dataPoint = data[value]
-    return dataPoint?.name || ''
+  // Format timestamp to event name (truncated)
+  const formatTick = (timestamp: number) => {
+    const dataPoint = sortedData.find((d) => d.timestamp === timestamp)
+    const name = dataPoint?.name || ''
+    return name.length > 12 ? name.slice(0, 12) + '…' : name
   }
 
   return (
     <ResponsiveContainer width='100%' height={300}>
-      <AreaChart data={data}>
+      <AreaChart data={sortedData}>
         <defs>
           <linearGradient id='gradient' x1='0' y1='0' x2='0' y2='1'>
             <stop offset='5%' stopColor='#495aff' stopOpacity={0.8} />
@@ -71,12 +76,20 @@ export function Chart({ data }: { data: ChartDataPoint[] }) {
           </linearGradient>
         </defs>
         <XAxis
-          dataKey='id'
+          dataKey='timestamp'
           stroke='#888888'
           tickLine={false}
           axisLine={false}
-          fontSize={12}
+          fontSize={10}
           tickFormatter={formatTick}
+          type='number'
+          domain={['dataMin', 'dataMax']}
+          scale='time'
+          ticks={sortedData.map((d) => d.timestamp)}
+          angle={-45}
+          textAnchor='end'
+          height={60}
+          interval={0}
         />
         <YAxis
           stroke='#888888'

@@ -1,4 +1,7 @@
-import { getCachedPlayer } from '@/lib/supabase/cached-queries'
+import {
+  getCachedPlayer,
+  getCachedPlayerNemesis,
+} from '@/lib/supabase/cached-queries'
 import Link from 'next/link'
 import { removeYearFromEventName, getNumericDate } from '@/lib/utils'
 import { Chart } from '@/components/chart'
@@ -21,7 +24,13 @@ export default async function PlayerProfile({
     return <div>Player not found</div>
   }
 
-  const { ordinal: current_rating, event_participation, username } = data
+  const {
+    id: playerId,
+    ordinal: current_rating,
+    event_participation,
+    username,
+  } = data
+  const nemeses = await getCachedPlayerNemesis(playerId)
   const wins = event_participation.reduce(
     (acc: number, event: { games_won: number | null }) => {
       return acc + (event.games_won ?? 0)
@@ -55,12 +64,14 @@ export default async function PlayerProfile({
       const startDate = entry.event?.start_date
       // start_date is string | null from the database, getNumericDate handles null
       const formattedDate = startDate ? getNumericDate(startDate) : 'unknown'
+      const timestamp = startDate ? new Date(startDate).getTime() : 0
       return {
         // Use index as unique identifier to prevent overlapping data points
         id: index,
         name: removeYearFromEventName(entry.event?.name ?? null),
         fullName: entry.event?.name ?? '',
         date: formattedDate,
+        timestamp,
         rating: isOrdinal(entry.ordinal) ? Math.round(entry.ordinal) : 1200,
       }
     })
@@ -79,6 +90,7 @@ export default async function PlayerProfile({
           <div className='space-y-1'>
             <p className=''>Rating: {Math.round(current_rating as number)}</p>
             <p className=''>Wins: {wins}</p>
+            <p className=''>Tournaments: {event_participation.length}</p>
             {mostRecentEvent && (
               <p className=''>
                 Last event:{' '}
@@ -91,6 +103,30 @@ export default async function PlayerProfile({
             )}
           </div>
         </div>
+
+        {nemeses && nemeses.length > 0 && (
+          <div className='max-w-[300px] w-full space-y-2 order-2 md:order-none'>
+            <div className='flex justify-between items-baseline'>
+              <p className='font-semibold text-2xl text-foreground'>Rivals</p>
+              <p className='text-muted-foreground text-xs'>W / L / D</p>
+            </div>
+            <div className='space-y-1'>
+              {nemeses.map((n) => (
+                <div key={n.playerId} className='flex justify-between'>
+                  <Link
+                    href={`/leaderboard/${encodeURIComponent(n.username)}`}
+                    className='hover:underline cursor-pointer text-primary'
+                  >
+                    {n.username}
+                  </Link>
+                  <span className='text-muted-foreground text-sm tabular-nums'>
+                    {n.wins} / {n.losses} / {n.draws}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className='max-w-[300px] w-full space-y-2 order-3 md:order-none'>
           <p className='font-semibold text-2xl text-foreground'>
