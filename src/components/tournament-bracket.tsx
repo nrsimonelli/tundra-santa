@@ -2,6 +2,7 @@ import { SectionGroup, GameWithParsedName } from '@/lib/tournament'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { Crown } from 'lucide-react'
+import { FactionImage } from '@/components/faction-image'
 
 interface TournamentBracketProps {
   sections: SectionGroup[]
@@ -154,20 +155,27 @@ function GameCard({ game }: { game: GameWithParsedName }) {
                       <Crown className='h-3 w-3 text-primary flex-shrink-0' />
                     )}
                   </div>
-                  <div className='mt-1 space-y-0.5'>
-                    {participant.final_score !== null && (
-                      <div className='text-xs text-muted-foreground'>
-                        Score: {participant.final_score}
-                      </div>
-                    )}
-                    {participant.faction && (
-                      <div className='text-xs text-muted-foreground'>
-                        {participant.faction}
-                        {participant.player_mat &&
-                          ` • ${participant.player_mat}`}
-                      </div>
-                    )}
-                  </div>
+                  {(participant.final_score !== null ||
+                    participant.faction ||
+                    participant.player_mat) && (
+                    <div className='mt-1 flex items-center justify-between flex-wrap text-xs text-muted-foreground'>
+                      {participant.faction && participant.player_mat && (
+                        <div className='flex items-center gap-1'>
+                          <FactionImage
+                            faction={participant.faction}
+                            width={20}
+                            height={20}
+                          />
+                          <span className='capitalize'>
+                            {participant.player_mat}
+                          </span>
+                        </div>
+                      )}
+                      {participant.final_score !== null && (
+                        <span>{participant.final_score}</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             )

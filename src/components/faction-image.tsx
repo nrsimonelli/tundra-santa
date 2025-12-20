@@ -1,5 +1,11 @@
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 import albionImage from '@/assets/factions/albion.png'
 import crimeaImage from '@/assets/factions/crimea.png'
@@ -23,12 +29,16 @@ interface FactionImageProps {
   faction: string | null | undefined
   className?: string
   alt?: string
+  width?: number
+  height?: number
 }
 
 export function FactionImage({
   faction,
   className,
   alt,
+  width = 32,
+  height = 32,
 }: FactionImageProps) {
   if (!faction) {
     return null
@@ -41,14 +51,24 @@ export function FactionImage({
     return null
   }
 
-  return (
+  const imageElement = (
     <Image
       src={image}
       alt={alt || `${faction} faction`}
-      width={32}
-      height={32}
+      width={width}
+      height={height}
       className={cn('inline-block', className)}
     />
   )
-}
 
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>{imageElement}</TooltipTrigger>
+        <TooltipContent>
+          <p className='capitalize'>{faction}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  )
+}
