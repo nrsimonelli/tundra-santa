@@ -132,6 +132,45 @@ export async function getCachedPlayerNemesis(
         records.set(p.player, existing)
       })
 
+      type ScoringMethod =
+        | 'normalized' // (wins * losses) / totalGames + draws
+        | 'geometric' // sqrt(wins * losses) + draws
+        | 'balance' // min(wins, losses) * (wins + losses) / totalGames
+        | 'harmonic' // 2 * wins * losses / (wins + losses) + draws
+        | 'sqrt_normalized' // (wins * losses) / sqrt(totalGames) + draws
+
+      const SCORING_METHOD: ScoringMethod = 'normalized' // Trying normalized for now, may adjust if more variance is desired
+
+      function calculateScore(
+        wins: number,
+        losses: number,
+        draws: number,
+        totalGames: number,
+        method: ScoringMethod
+      ): number {
+        const wlGames = wins + losses
+        switch (method) {
+          case 'normalized':
+            return (wins * losses) / totalGames + draws
+
+          case 'geometric':
+            return Math.sqrt(wins * losses) + draws
+
+          case 'balance':
+            return (Math.min(wins, losses) * wlGames) / totalGames + draws
+
+          case 'harmonic':
+            if (wlGames === 0) return draws
+            return (2 * wins * losses) / wlGames + draws
+
+          case 'sqrt_normalized':
+            return (wins * losses) / Math.sqrt(totalGames) + draws
+
+          default:
+            return wins * losses + draws
+        }
+      }
+
       // Filter to minimum 5 encounters and calculate scores
       const candidates: {
         playerId: number
@@ -147,7 +186,13 @@ export async function getCachedPlayerNemesis(
         const totalGames = record.wins + record.losses + record.draws
         if (totalGames < 5) return
 
-        const score = record.wins * record.losses + record.draws
+        const score = calculateScore(
+          record.wins,
+          record.losses,
+          record.draws,
+          totalGames,
+          SCORING_METHOD
+        )
         candidates.push({
           playerId: opponentId,
           score,
