@@ -71,8 +71,8 @@ export function Chart({ data }: { data: ChartDataPoint[] }) {
       <AreaChart data={sortedData}>
         <defs>
           <linearGradient id='gradient' x1='0' y1='0' x2='0' y2='1'>
-            <stop offset='5%' stopColor='#495aff' stopOpacity={0.8} />
-            <stop offset='95%' stopColor='#0acffe' stopOpacity={0} />
+            <stop offset='5%' stopColor='var(--gradient-from)' stopOpacity={0.8} />
+            <stop offset='95%' stopColor='var(--gradient-to)' stopOpacity={0} />
           </linearGradient>
         </defs>
         <XAxis

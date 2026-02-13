@@ -302,7 +302,7 @@ function TournamentHeader({
     <div className='space-y-4'>
       <div className='inline-flex text-3xl font-semibold space-x-2 w-full justify-start md:justify-center'>
         <p>Tournament:</p>
-        <p className='text-transparent bg-clip-text bg-gradient-to-tr to-[#0acffe] from-[#495aff] select-none'>
+        <p className='text-transparent bg-clip-text bg-gradient-to-tr to-[var(--gradient-to)] from-[var(--gradient-from)] select-none'>
           {event.name || 'Unnamed Tournament'}
         </p>
       </div>

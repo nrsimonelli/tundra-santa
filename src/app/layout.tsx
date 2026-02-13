@@ -25,7 +25,7 @@ export default function RootLayout({
         )}
       >
         <TopNav />
-        <div className='text-background bg-gradient-to-tr to-[#0acffe] from-[#495aff] flex justify-center min-h-[450px]'>
+        <div className='text-background bg-gradient-to-tr to-[var(--gradient-to)] from-[var(--gradient-from)] flex justify-center min-h-[450px]'>
           <div className='flex flex-col items-start justify-center max-w-5xl w-full px-6 space-y-2'>
             <h1 className='text-4xl lg:text-6xl font-bold'>
               Scythe Tournament Rating

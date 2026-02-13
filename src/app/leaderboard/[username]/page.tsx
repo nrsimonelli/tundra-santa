@@ -35,7 +35,7 @@ export default async function PlayerProfile({
     (acc: number, event: { games_won: number | null }) => {
       return acc + (event.games_won ?? 0)
     },
-    0
+    0,
   )
 
   const isOrdinal = (value: any): value is number => {
@@ -80,7 +80,7 @@ export default async function PlayerProfile({
     <div className='flex flex-col items-start md:flex-row justify-start flex-wrap gap-8'>
       <div className='inline-flex text-3xl font-semibold space-x-2 w-full justify-start'>
         <p>Player profile:</p>
-        <p className='text-transparent bg-clip-text bg-gradient-to-tr to-[#0acffe] from-[#495aff] select-none'>
+        <p className='text-transparent bg-clip-text bg-gradient-to-tr to-[var(--gradient-to)] from-[var(--gradient-from)] select-none'>
           {username}
         </p>
       </div>
