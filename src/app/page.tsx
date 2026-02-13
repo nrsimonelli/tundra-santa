@@ -1,12 +1,15 @@
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { LandingMechsDynamic } from '@/components/landing-mechs-dynamic'
 
 // This page is completely static - no data fetching
 export const dynamic = 'force-static'
 
 export default function Home() {
   return (
-    <div className='flex gap-4 flex-col sm:flex-row items-center justify-center py-24'>
+    <div className='flex flex-col items-center'>
+      <LandingMechsDynamic />
+      <div className='flex gap-4 flex-col sm:flex-row items-center justify-center py-24'>
       <a
         className='pointer-events-auto text-primary font-semibold'
         href='https://discord.gg/HRvysu2QT2'
@@ -18,6 +21,7 @@ export default function Home() {
       <Link href={'leaderboard'}>
         <Button>View the leaderboard</Button>
       </Link>
+      </div>
     </div>
   )
 }
