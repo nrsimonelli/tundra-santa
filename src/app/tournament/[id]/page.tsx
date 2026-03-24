@@ -40,6 +40,8 @@ export default async function TournamentPage({
 
   // Fetch event by ID
   const event = await getCachedEvent(eventId)
+  const previousEvent = eventId > 1 ? await getCachedEvent(eventId - 1) : null
+  const nextEvent = await getCachedEvent(eventId + 1)
 
   if (!event) {
     return (
@@ -87,7 +89,12 @@ export default async function TournamentPage({
     const winnerName = await getWinnerName(supabase, event.winner)
     return (
       <div className='flex flex-col space-y-8'>
-        <TournamentHeader event={event} winnerName={winnerName} />
+        <TournamentHeader
+          event={event}
+          winnerName={winnerName}
+          previousEvent={previousEvent}
+          nextEvent={nextEvent}
+        />
         <div className='text-center py-8 text-muted-foreground'>
           No games have been recorded for this tournament yet.
         </div>
@@ -120,7 +127,7 @@ export default async function TournamentPage({
     if (simpleResult.error) {
       console.error(
         `Error in batch ${Math.floor(i / BATCH_SIZE) + 1}:`,
-        simpleResult.error
+        simpleResult.error,
       )
       participationError = simpleResult.error
       continue
@@ -137,8 +144,8 @@ export default async function TournamentPage({
       new Set(
         participationData
           .map((p: any) => p.player)
-          .filter((id: any) => id != null)
-      )
+          .filter((id: any) => id != null),
+      ),
     )
 
     const playersMap = new Map<number, any>()
@@ -246,7 +253,12 @@ export default async function TournamentPage({
 
   return (
     <div className='flex flex-col space-y-8'>
-      <TournamentHeader event={event} winnerName={winnerName} />
+      <TournamentHeader
+        event={event}
+        winnerName={winnerName}
+        previousEvent={previousEvent}
+        nextEvent={nextEvent}
+      />
 
       {/* Bracket */}
       {sections.length > 0 ? (
@@ -273,7 +285,7 @@ export default async function TournamentPage({
 // Helper function to fetch winner name
 async function getWinnerName(
   supabase: Awaited<ReturnType<typeof createClient>>,
-  winnerId: number | null
+  winnerId: number | null,
 ): Promise<string | null> {
   if (!winnerId) return null
 
@@ -290,6 +302,8 @@ async function getWinnerName(
 function TournamentHeader({
   event,
   winnerName,
+  previousEvent,
+  nextEvent,
 }: {
   event: {
     name: string | null
@@ -297,6 +311,18 @@ function TournamentHeader({
     num_players_per_game: number | null
   }
   winnerName: string | null
+  previousEvent: {
+    id: number
+    name: string | null
+    start_date: string | null
+    num_players_per_game: number | null
+  } | null
+  nextEvent: {
+    id: number
+    name: string | null
+    start_date: string | null
+    num_players_per_game: number | null
+  } | null
 }) {
   return (
     <div className='space-y-4'>
@@ -329,6 +355,30 @@ function TournamentHeader({
           <div>
             <span className='font-semibold'>Players per Game: </span>
             {event.num_players_per_game}
+          </div>
+        )}
+      </div>
+      <div className='flex flex-row'>
+        {previousEvent && (
+          <div className='mr-auto'>
+            <span>Previous tournament:</span>
+            <Link
+              href={`/tournament/${previousEvent.id}`}
+              className='text-primary hover:underline'
+            >
+              {previousEvent.name}
+            </Link>
+          </div>
+        )}
+        {nextEvent && (
+          <div className='ml-auto'>
+            <span>Next tournament:</span>
+            <Link
+              href={`/tournament/${nextEvent.id}`}
+              className='text-primary hover:underline'
+            >
+              {nextEvent.name}
+            </Link>
           </div>
         )}
       </div>
