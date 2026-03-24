@@ -358,27 +358,15 @@ function TournamentHeader({
           </div>
         )}
       </div>
-      <div className='flex flex-row'>
+      <div className='flex flex-row text-sm text-primary hover:underline'>
         {previousEvent && (
-          <div className='mr-auto'>
-            <span>Previous tournament:</span>
-            <Link
-              href={`/tournament/${previousEvent.id}`}
-              className='text-primary hover:underline'
-            >
-              {previousEvent.name}
-            </Link>
+          <div className='mr-auto gap-1'>
+            <Link href={`/tournament/${previousEvent.id}`}>← Previous</Link>
           </div>
         )}
         {nextEvent && (
-          <div className='ml-auto'>
-            <span>Next tournament:</span>
-            <Link
-              href={`/tournament/${nextEvent.id}`}
-              className='text-primary hover:underline'
-            >
-              {nextEvent.name}
-            </Link>
+          <div className='ml-auto gap-1'>
+            <Link href={`/tournament/${nextEvent.id}`}>Next →</Link>
           </div>
         )}
       </div>
