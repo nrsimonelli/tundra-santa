@@ -1181,11 +1181,14 @@ export type LeagueMatchupGameRow = {
   gameName: string | null
   playerA: string
   playerB: string
+  factionA: string | null
+  factionB: string | null
   scoreA: number | null
   scoreB: number | null
   bidA: number | null
   bidB: number | null
   winnerUsername: string | null
+  winnerFaction: string | null
 }
 
 export async function getCachedLeagueMatchupDetail(
@@ -1261,12 +1264,20 @@ export async function getCachedLeagueMatchupDetail(
           gameName: gameById.get(gid)?.name ?? null,
           playerA: names.get(a.player) ?? '?',
           playerB: names.get(b.player) ?? '?',
+          factionA: a.faction ?? null,
+          factionB: b.faction ?? null,
           scoreA: a.final_score,
           scoreB: b.final_score,
           bidA: normalizeBid(a.bid),
           bidB: normalizeBid(b.bid),
           winnerUsername:
             winnerId != null ? (names.get(winnerId) ?? null) : null,
+          winnerFaction:
+            winnerId === a.player
+              ? (a.faction ?? null)
+              : winnerId === b.player
+                ? (b.faction ?? null)
+                : null,
         })
       }
 

@@ -120,11 +120,8 @@ export default async function LeaguePlayerPage({
         <section className='space-y-3'>
           <h2 className='text-xl font-semibold'>By season</h2>
           <p className='text-sm text-muted-foreground max-w-3xl'>
-            Seasons are numbered <strong>S1…Sn</strong> with{' '}
-            <strong>S1 oldest</strong>. <strong>Tier</strong> is the tag from
-            game names you played most that season. <strong>Rank</strong> uses
-            the same season standings order for that tier: win rate, then wins,
-            then fewer losses.
+            <strong>Rank</strong> may be inaccurate, for clarification always
+            refer back to the season's tournament page.
           </p>
           <Table>
             <TableHeader>

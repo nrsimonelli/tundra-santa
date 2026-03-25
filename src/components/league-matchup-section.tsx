@@ -310,13 +310,14 @@ function MatchupGameTable({
                 )}
               </td>
               <td className='py-2 pr-3 align-top'>
-                <div className='flex flex-col gap-0.5'>
+                <div className='flex flex-wrap items-center gap-1.5'>
                   <Link
                     href={leaguePlayerProfileHref(g.playerA)}
                     className='text-primary hover:underline w-fit'
                   >
                     {g.playerA}
                   </Link>
+                  <span className='text-muted-foreground text-xs'>vs</span>
                   <Link
                     href={leaguePlayerProfileHref(g.playerB)}
                     className='text-primary hover:underline w-fit'
@@ -333,12 +334,21 @@ function MatchupGameTable({
               </td>
               <td className='py-2 align-top'>
                 {g.winnerUsername ? (
-                  <Link
-                    href={leaguePlayerProfileHref(g.winnerUsername)}
-                    className='text-primary font-medium hover:underline'
-                  >
-                    {g.winnerUsername}
-                  </Link>
+                  <div className='flex items-center gap-1.5'>
+                    {g.winnerFaction && (
+                      <FactionImage
+                        faction={g.winnerFaction}
+                        width={16}
+                        height={16}
+                      />
+                    )}
+                    <Link
+                      href={leaguePlayerProfileHref(g.winnerUsername)}
+                      className='text-primary font-medium hover:underline'
+                    >
+                      {g.winnerUsername}
+                    </Link>
+                  </div>
                 ) : (
                   '—'
                 )}

@@ -36,3 +36,12 @@ export function leagueSeasonsByStartDateAsc(
     label: formatSeasonLabel(e),
   }))
 }
+
+/** Latest league season = last row from {@link leagueSeasonsByStartDateAsc} (most recent start_date). */
+export function leagueLatestSeasonEventId(
+  options: LeagueEventOption[],
+): number | null {
+  const rows = leagueSeasonsByStartDateAsc(options)
+  if (rows.length === 0) return null
+  return rows[rows.length - 1]!.eventId
+}

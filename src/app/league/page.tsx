@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { getCachedLeagueEventOptions } from '@/lib/supabase/cached-queries'
+import { leagueLatestSeasonEventId } from '@/lib/league-seasons'
 
 export const revalidate = 3600
 
@@ -17,5 +18,17 @@ export default async function LeaguePage() {
     )
   }
 
-  redirect(`/league/${options[0].id}`)
+  const latestId = leagueLatestSeasonEventId(options)
+  if (latestId == null) {
+    return (
+      <div className='max-w-5xl mx-auto shadow-lg -mt-20 z-10 bg-background rounded-md p-8 border'>
+        <h2 className='text-2xl font-semibold mb-2'>League</h2>
+        <p className='text-muted-foreground'>
+          Data unavailable. Please refresh the page or try again later.
+        </p>
+      </div>
+    )
+  }
+
+  redirect(`/league/${latestId}`)
 }

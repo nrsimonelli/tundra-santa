@@ -42,13 +42,15 @@ export default async function LeagueAllTimePage() {
         >
           ← League (latest season)
         </Link>
-        <h2 className='text-2xl md:text-3xl font-semibold'>
-          All-time standings
-        </h2>
+        <div>
+          {/* <p className='text-sm text-muted-foreground'>1v1 League</p> */}
+          <h2 className='text-2xl md:text-3xl font-semibold'>
+            1v1 League: All-time standings
+          </h2>
+        </div>
         <p className='text-muted-foreground max-w-2xl'>
-          {data.scopeLabel}. Rankings prioritize wins in higher tiers first (T1,
-          then T2, and so on, then Unspecified), followed by overall win rate,
-          total wins, and fewer losses.
+          All tiers across all seasons. Rankings prioritize wins in higher tiers
+          first, followed by overall win rate, total wins, and fewer losses.
         </p>
         <p className='text-sm text-muted-foreground'>
           {data.totalGames} recorded 1v1 games across all seasons ·{' '}
