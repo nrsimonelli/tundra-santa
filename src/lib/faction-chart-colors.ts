@@ -23,3 +23,22 @@ export function factionChartSegmentStroke(faction: string): string | undefined {
   if (k === 'saxony') return '#404040'
   return undefined
 }
+
+/**
+ * Tints for landing 3D mechs (material albedo). Same faction keys as charts/logos; hexes are tuned
+ * for GLB texture + lighting—not for flat chart fills.
+ */
+export const FACTION_MECH_TINT: Record<string, string> = {
+  albion: '#2d9d52',
+  nordic: '#6b7cff',
+  rusviet: '#d93838',
+  togawa: '#a855f7',
+  crimea: '#e4b422',
+  saxony: '#71717a',
+  polania: '#e4e4eb',
+}
+
+export function factionMechTint(faction: string): string {
+  const k = faction.trim().toLowerCase()
+  return FACTION_MECH_TINT[k] ?? '#64748b'
+}

@@ -11,7 +11,6 @@ import {
   type Object3D,
 } from 'three'
 const ROTATION_SPEED = 0.002
-const MECH_TINT = '#6b7cff'
 
 function tintMaterials(object: Object3D, tintColor: Color): void {
   object.traverse((child) => {
@@ -36,9 +35,10 @@ function tintMaterials(object: Object3D, tintColor: Color): void {
 interface MechModelProps {
   url: string
   scale?: number
+  tintHex: string
 }
 
-export function MechModel({ url, scale = 1 }: MechModelProps) {
+export function MechModel({ url, scale = 1, tintHex }: MechModelProps) {
   const groupRef = useRef<Group>(null)
   const { scene } = useGLTF(url)
   const tilt = useMemo(
@@ -50,17 +50,16 @@ export function MechModel({ url, scale = 1 }: MechModelProps) {
   )
 
   useEffect(() => {
-    if (scene.userData.tintHex === MECH_TINT) return
-    tintMaterials(scene, new Color(MECH_TINT))
-    scene.userData.tintHex = MECH_TINT
-  }, [scene])
+    if (scene.userData.tintHex === tintHex) return
+    tintMaterials(scene, new Color(tintHex))
+    scene.userData.tintHex = tintHex
+  }, [scene, tintHex])
 
-  useFrame((state) => {
+  useFrame(() => {
     if (groupRef.current) {
       groupRef.current.rotation.x = tilt.tiltAxisX
       groupRef.current.rotation.z = tilt.tiltAxisZ
       groupRef.current.rotation.y += ROTATION_SPEED
-      state.invalidate()
     }
   })
 
