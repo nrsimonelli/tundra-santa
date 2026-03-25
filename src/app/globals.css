@@ -79,7 +79,7 @@
   :root[data-faction='saxony'] {
     --gradient-from: #161616;
     --gradient-to: #000000;
-    --hero-foreground: 0 0% 98%;
+    --hero-foreground: 0 0% 62%;
 
     --background: 0 0% 4%;
     --foreground: 0 0% 96%;
@@ -148,7 +148,6 @@
     --background: 0 62% 40%;
     --foreground: 0 0% 100%;
 
-    /* Same red as page; elevation comes from shadow on shells, not a lighter fill. */
     --card: 0 61% 44%;
     --card-foreground: 0 0% 100%;
 
@@ -188,7 +187,24 @@
   * {
     @apply border-border;
   }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground;
+  }
+
+  :root[data-faction='saxony'] body {
+    color: hsl(var(--muted-foreground));
+  }
+
+  :root[data-faction='saxony'] :is(h1, h2, h3, h4, h5, h6) {
+    color: hsl(var(--foreground));
+  }
+
+  :root[data-faction='saxony'] .site-hero :is(h1, h2, h3, h4, h5, h6) {
+    color: hsl(var(--hero-foreground));
   }
 }

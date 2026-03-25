@@ -1179,6 +1179,9 @@ export async function getCachedLeagueAllTimeStandings(): Promise<LeagueAllTimeSt
 export type LeagueMatchupGameRow = {
   gameId: number
   gameName: string | null
+  eventId: number
+  /** S1 = oldest league season, same convention as LeaguePlayerGameRow */
+  seasonIndex: number
   playerA: string
   playerB: string
   factionA: string | null
@@ -1210,6 +1213,16 @@ export async function getCachedLeagueMatchupDetail(
       const events = await getLeagueEvents(supabase)
       const resolved = resolveLeagueScope(scopeKey, events)
       if (!resolved) return null
+
+      const eventsSortedOldest = [...events].sort((a, b) => {
+        const da = a.start_date ?? ''
+        const db = b.start_date ?? ''
+        return da.localeCompare(db)
+      })
+      const seasonIndexByEventId = new Map<number, number>()
+      eventsSortedOldest.forEach((e, i) => {
+        seasonIndexByEventId.set(e.id, i + 1)
+      })
 
       const [c1, c2] = decoded
       const k1 = `${c1.faction}|${c1.mat}`
@@ -1259,9 +1272,13 @@ export async function getCachedLeagueMatchupDetail(
 
         const winnerId =
           a.ranking === 1 ? a.player : b.ranking === 1 ? b.player : null
+        const meta = gameById.get(gid)
+        const eventId = meta?.event ?? 0
         rows.push({
           gameId: gid,
-          gameName: gameById.get(gid)?.name ?? null,
+          gameName: meta?.name ?? null,
+          eventId,
+          seasonIndex: seasonIndexByEventId.get(eventId) ?? 0,
           playerA: names.get(a.player) ?? '?',
           playerB: names.get(b.player) ?? '?',
           factionA: a.faction ?? null,
