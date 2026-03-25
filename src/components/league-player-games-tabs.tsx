@@ -15,6 +15,8 @@ import {
 import { cn } from '@/lib/utils'
 import { formatLeagueBidPair } from '@/lib/league-format'
 import { leaguePlayerProfileHref } from '@/lib/league-links'
+import { tournamentGameHref } from '@/lib/tournament-game-anchor'
+import { HashSmoothLink } from '@/components/hash-smooth-link'
 
 type Props = {
   games: LeaguePlayerGameRow[]
@@ -39,13 +41,11 @@ export function LeaguePlayerGamesTabs({ games }: Props) {
   }, [games])
 
   const [active, setActive] = useState<number | 'all'>(
-    seasons[0]?.seasonIndex ?? 'all'
+    seasons[0]?.seasonIndex ?? 'all',
   )
 
   const visible =
-    active === 'all'
-      ? games
-      : games.filter((g) => g.seasonIndex === active)
+    active === 'all' ? games : games.filter((g) => g.seasonIndex === active)
 
   if (seasons.length === 0) {
     return (
@@ -80,7 +80,7 @@ export function LeaguePlayerGamesTabs({ games }: Props) {
             'rounded-md border px-3 py-1.5 text-sm font-medium transition-colors',
             active === 'all'
               ? 'bg-primary text-primary-foreground border-primary'
-              : 'border-input bg-background hover:bg-muted/60'
+              : 'border-input bg-background hover:bg-muted/60',
           )}
         >
           All seasons
@@ -94,7 +94,7 @@ export function LeaguePlayerGamesTabs({ games }: Props) {
               'rounded-md border px-3 py-1.5 text-sm font-medium transition-colors',
               active === s.seasonIndex
                 ? 'bg-primary text-primary-foreground border-primary'
-                : 'border-input bg-background hover:bg-muted/60'
+                : 'border-input bg-background hover:bg-muted/60',
             )}
           >
             {s.label}
@@ -138,7 +138,7 @@ function GameRow({ g }: { g: LeaguePlayerGameRow }) {
         <span
           className={cn(
             'text-xs font-semibold uppercase',
-            g.won ? 'text-primary' : 'text-muted-foreground'
+            g.won ? 'text-primary' : 'text-muted-foreground',
           )}
         >
           {g.won ? 'Win' : 'Loss'}
@@ -161,7 +161,11 @@ function GameRow({ g }: { g: LeaguePlayerGameRow }) {
         <LeagueComboDisplay faction={g.myFaction} mat={g.myMat} iconSize={22} />
       </TableCell>
       <TableCell>
-        <LeagueComboDisplay faction={g.oppFaction} mat={g.oppMat} iconSize={22} />
+        <LeagueComboDisplay
+          faction={g.oppFaction}
+          mat={g.oppMat}
+          iconSize={22}
+        />
       </TableCell>
       <TableCell className='tabular-nums text-sm'>
         {g.myScore ?? '—'} – {g.oppScore ?? '—'}
@@ -170,13 +174,30 @@ function GameRow({ g }: { g: LeaguePlayerGameRow }) {
         {formatLeagueBidPair(g.myBid, g.oppBid)}
       </TableCell>
       <TableCell className='max-w-[160px]'>
-        <span className='text-xs text-muted-foreground'>#{g.gameId}</span>
-        {g.seasonIndex > 0 && (
-          <div className='text-[10px] text-muted-foreground'>S{g.seasonIndex}</div>
-        )}
-        {g.gameName && (
-          <div className='text-xs truncate' title={g.gameName ?? ''}>
-            {g.gameName}
+        {g.eventId > 0 ? (
+          <HashSmoothLink
+            href={tournamentGameHref(g.eventId, g.gameName, g.gameId)}
+            className='text-primary hover:underline text-xs block max-w-full'
+          >
+            {g.seasonIndex > 0 && (
+              <span className='block truncate text-[10px]'>
+                S{g.seasonIndex}
+              </span>
+            )}
+            <span className='block truncate' title={g.gameName ?? ''}>
+              {g.gameName ?? '—'}
+            </span>
+          </HashSmoothLink>
+        ) : (
+          <div className='text-xs text-muted-foreground'>
+            {g.seasonIndex > 0 && (
+              <span className='block truncate text-[10px]'>
+                S{g.seasonIndex}
+              </span>
+            )}
+            <span className='block truncate' title={g.gameName ?? ''}>
+              {g.gameName ?? '—'}
+            </span>
           </div>
         )}
       </TableCell>

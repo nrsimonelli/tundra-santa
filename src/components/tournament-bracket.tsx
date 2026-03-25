@@ -1,4 +1,5 @@
 import { SectionGroup, GameWithParsedName } from '@/lib/tournament'
+import { leagueGameCardDomId } from '@/lib/tournament-game-anchor'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { Crown } from 'lucide-react'
@@ -126,7 +127,7 @@ function GameCard({ game }: { game: GameWithParsedName }) {
 
         // Update nextPlacement: count unique score tiers (excluding nulls)
         const uniqueScores = new Set(
-          sortedByScore.filter((s) => s.score !== null).map((s) => s.score)
+          sortedByScore.filter((s) => s.score !== null).map((s) => s.score),
         )
         nextPlacement = nextPlacement + uniqueScores.size
       }
@@ -134,7 +135,10 @@ function GameCard({ game }: { game: GameWithParsedName }) {
   }
 
   return (
-    <div className='border rounded-lg p-4 bg-card hover:shadow-md transition-shadow'>
+    <div
+      id={leagueGameCardDomId(game.name, game.id)}
+      className='border rounded-lg p-4 bg-card hover:shadow-md transition-shadow scroll-mt-24'
+    >
       <div className='mb-3 flex items-center justify-between'>
         <div>
           <h4 className='font-semibold text-sm text-foreground'>
@@ -164,7 +168,7 @@ function GameCard({ game }: { game: GameWithParsedName }) {
                   'flex items-center justify-between p-2 rounded',
                   isWinner
                     ? 'bg-primary/10 border border-primary/20'
-                    : 'bg-muted/50'
+                    : 'bg-muted/50',
                 )}
               >
                 <div className='flex-1 min-w-0'>
@@ -172,24 +176,24 @@ function GameCard({ game }: { game: GameWithParsedName }) {
                     <span
                       className={cn(
                         'text-xs font-medium whitespace-nowrap',
-                        isWinner ? 'text-primary' : 'text-muted-foreground'
+                        isWinner ? 'text-primary' : 'text-muted-foreground',
                       )}
                     >
                       #
                       {placements.has(index)
                         ? placements.get(index)!
-                        : participant.ranking ?? '?'}
+                        : (participant.ranking ?? '?')}
                     </span>
                     {participant.player?.username ? (
                       <Link
                         href={`/leaderboard/${encodeURIComponent(
-                          participant.player.username
+                          participant.player.username,
                         )}`}
                         className={cn(
                           'font-medium truncate hover:underline',
                           isWinner
                             ? 'text-primary font-semibold'
-                            : 'text-foreground'
+                            : 'text-foreground',
                         )}
                         title={participant.player.username}
                       >
@@ -201,7 +205,7 @@ function GameCard({ game }: { game: GameWithParsedName }) {
                           'font-medium truncate',
                           isWinner
                             ? 'text-primary font-semibold'
-                            : 'text-foreground'
+                            : 'text-foreground',
                         )}
                         title='Unknown Player'
                       >

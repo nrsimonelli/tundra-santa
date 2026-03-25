@@ -14,6 +14,7 @@ import {
   DEFAULT_FACTION_THEME_ID,
   FACTION_THEME_STORAGE_KEY,
   isFactionThemeId,
+  setFactionThemeCookie,
   type FactionThemeId,
 } from '@/lib/faction-ui-theme'
 
@@ -32,35 +33,42 @@ export function useFactionTheme(): FactionThemeContextValue {
   return ctx
 }
 
-export function FactionThemeProvider({ children }: { children: ReactNode }) {
+export function FactionThemeProvider({
+  children,
+  initialFactionThemeId = DEFAULT_FACTION_THEME_ID,
+}: {
+  children: ReactNode
+  /** From SSR cookie; must match `data-faction` on `<html>`. */
+  initialFactionThemeId?: FactionThemeId
+}) {
   const [activeFactionThemeId, setActiveFactionThemeId] =
-    useState<FactionThemeId>(DEFAULT_FACTION_THEME_ID)
+    useState<FactionThemeId>(initialFactionThemeId)
 
   const setFactionTheme = useCallback((factionId: string) => {
     if (!isFactionThemeId(factionId)) return
     localStorage.setItem(FACTION_THEME_STORAGE_KEY, factionId)
+    setFactionThemeCookie(factionId)
     applyFactionThemeToDocument(factionId)
     setActiveFactionThemeId(factionId)
   }, [])
 
   useEffect(() => {
     const raw = localStorage.getItem(FACTION_THEME_STORAGE_KEY)
-    const fromDom =
-      typeof document !== 'undefined'
-        ? document.documentElement.dataset.faction
-        : undefined
-    let id: FactionThemeId = DEFAULT_FACTION_THEME_ID
+    let id: FactionThemeId = initialFactionThemeId
+
     if (raw && isFactionThemeId(raw)) {
       id = raw
-    } else if (fromDom && isFactionThemeId(fromDom)) {
-      id = fromDom
+      if (raw !== initialFactionThemeId) {
+        applyFactionThemeToDocument(raw)
+        setFactionThemeCookie(raw)
+      }
+    } else {
+      localStorage.setItem(FACTION_THEME_STORAGE_KEY, initialFactionThemeId)
     }
+
     applyFactionThemeToDocument(id)
     setActiveFactionThemeId(id)
-    if (!raw || !isFactionThemeId(raw)) {
-      localStorage.setItem(FACTION_THEME_STORAGE_KEY, id)
-    }
-  }, [])
+  }, [initialFactionThemeId])
 
   const value = useMemo(
     () => ({

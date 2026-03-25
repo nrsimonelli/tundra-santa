@@ -14,6 +14,8 @@ import { FactionImage } from '@/components/faction-image'
 import { WinRateBar } from '@/components/win-rate-bar'
 import { formatLeagueBidPair } from '@/lib/league-format'
 import { leaguePlayerProfileHref } from '@/lib/league-links'
+import { tournamentGameHref } from '@/lib/tournament-game-anchor'
+import { HashSmoothLink } from '@/components/hash-smooth-link'
 
 type Props = {
   scope: string
@@ -60,7 +62,7 @@ export function LeagueMatchupSection({
       const q = p.toString()
       router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false })
     },
-    [pathname, router, searchParams]
+    [pathname, router, searchParams],
   )
 
   const loadGames = useCallback(
@@ -69,9 +71,11 @@ export function LeagueMatchupSection({
       setLoadingSlug(slug)
       setGamesError(null)
       try {
-        const tierQ = tierFilter ? `&tier=${encodeURIComponent(tierFilter)}` : ''
+        const tierQ = tierFilter
+          ? `&tier=${encodeURIComponent(tierFilter)}`
+          : ''
         const res = await fetch(
-          `/api/league/matchup-games?scope=${encodeURIComponent(scope)}&slug=${encodeURIComponent(slug)}${tierQ}`
+          `/api/league/matchup-games?scope=${encodeURIComponent(scope)}&slug=${encodeURIComponent(slug)}${tierQ}`,
         )
         if (!res.ok) {
           setGamesError('Could not load matchup games.')
@@ -83,7 +87,7 @@ export function LeagueMatchupSection({
         setLoadingSlug(null)
       }
     },
-    [gamesBySlug, scope, tierFilter]
+    [gamesBySlug, scope, tierFilter],
   )
 
   useEffect(() => {
@@ -107,9 +111,9 @@ export function LeagueMatchupSection({
       matchups.filter(
         (m) =>
           (m.faction1 === fa && m.faction2 === fb) ||
-          (m.faction1 === fb && m.faction2 === fa)
+          (m.faction1 === fb && m.faction2 === fa),
       ),
-    [matchups]
+    [matchups],
   )
 
   const toggleCombo = async (slug: string) => {
@@ -127,7 +131,10 @@ export function LeagueMatchupSection({
           const open = openFactionKey === key
           const mats = matRowsForFaction(row.faction1, row.faction2)
           return (
-            <div key={key} className='rounded-lg border bg-card/30 overflow-hidden'>
+            <div
+              key={key}
+              className='rounded-lg border bg-card/30 overflow-hidden'
+            >
               <button
                 type='button'
                 className='flex w-full items-center gap-3 p-4 text-left hover:bg-muted/40 transition-colors'
@@ -140,13 +147,25 @@ export function LeagueMatchupSection({
                 )}
                 <div className='flex flex-1 flex-wrap items-center gap-4 min-w-0'>
                   <div className='flex items-center gap-2'>
-                    <FactionImage faction={row.faction1} width={32} height={32} />
-                    <span className='font-medium capitalize'>{row.faction1}</span>
+                    <FactionImage
+                      faction={row.faction1}
+                      width={32}
+                      height={32}
+                    />
+                    <span className='font-medium capitalize'>
+                      {row.faction1}
+                    </span>
                   </div>
                   <span className='text-muted-foreground text-sm'>vs</span>
                   <div className='flex items-center gap-2'>
-                    <FactionImage faction={row.faction2} width={32} height={32} />
-                    <span className='font-medium capitalize'>{row.faction2}</span>
+                    <FactionImage
+                      faction={row.faction2}
+                      width={32}
+                      height={32}
+                    />
+                    <span className='font-medium capitalize'>
+                      {row.faction2}
+                    </span>
                   </div>
                 </div>
                 <div className='flex flex-col items-end gap-1 shrink-0 text-sm tabular-nums'>
@@ -160,12 +179,15 @@ export function LeagueMatchupSection({
                 <div className='border-t px-4 py-3 space-y-2 bg-muted/20'>
                   {mats.length === 0 && (
                     <p className='text-sm text-muted-foreground'>
-                      No combo matchups meet the minimum sample ({minGames}) for this faction
-                      pairing.
+                      No combo matchups meet the minimum sample ({minGames}) for
+                      this faction pairing.
                     </p>
                   )}
                   {mats.map((m) => (
-                    <div key={m.matchupSlug} className='rounded-md border bg-background'>
+                    <div
+                      key={m.matchupSlug}
+                      className='rounded-md border bg-background'
+                    >
                       <button
                         type='button'
                         className='flex w-full flex-wrap items-center gap-3 p-3 text-left hover:bg-muted/50'
@@ -182,7 +204,9 @@ export function LeagueMatchupSection({
                             mat={m.mat1}
                             iconSize={24}
                           />
-                          <span className='text-muted-foreground text-xs'>vs</span>
+                          <span className='text-muted-foreground text-xs'>
+                            vs
+                          </span>
                           <LeagueComboDisplay
                             faction={m.faction2}
                             mat={m.mat2}
@@ -219,7 +243,10 @@ export function LeagueMatchupSection({
   return (
     <div className='space-y-3'>
       {matchups.map((m) => (
-        <div key={m.matchupSlug} className='rounded-lg border bg-card/30 overflow-hidden'>
+        <div
+          key={m.matchupSlug}
+          className='rounded-lg border bg-card/30 overflow-hidden'
+        >
           <button
             type='button'
             className='flex w-full flex-wrap items-center gap-4 p-4 text-left hover:bg-muted/40 transition-colors'
@@ -239,7 +266,9 @@ export function LeagueMatchupSection({
               <span className='text-sm font-medium tabular-nums'>
                 {m.combo1Wins}-{m.combo2Wins}
               </span>
-              <span className='text-xs text-muted-foreground'>{m.games} games</span>
+              <span className='text-xs text-muted-foreground'>
+                {m.games} games
+              </span>
               <div className='w-36'>{wlBar(m.combo1Wins, m.combo2Wins)}</div>
             </div>
           </button>
@@ -256,7 +285,8 @@ export function LeagueMatchupSection({
       ))}
       {matchups.length === 0 && (
         <p className='text-sm text-muted-foreground'>
-          No combo matchups meet the minimum sample for this scope and tier filter.
+          No combo matchups meet the minimum sample for this scope and tier
+          filter.
         </p>
       )}
     </div>
@@ -273,7 +303,11 @@ function MatchupGameTable({
   error: string | null
 }) {
   if (loading) {
-    return <p className='text-sm text-muted-foreground py-2'>Loading matchup games…</p>
+    return (
+      <p className='text-sm text-muted-foreground py-2'>
+        Loading matchup games…
+      </p>
+    )
   }
   if (error) {
     return <p className='text-sm text-destructive py-2'>{error}</p>
@@ -301,15 +335,37 @@ function MatchupGameTable({
         <tbody>
           {games.map((g) => (
             <tr key={g.gameId} className='border-b border-border/60'>
-              <td className='py-2 pr-3 align-top max-w-[180px]'>
-                <span className='text-xs text-muted-foreground'>#{g.gameId}</span>
-                {g.gameName && (
-                  <div className='truncate text-xs' title={g.gameName}>
-                    {g.gameName}
+              <td className='py-2 pr-3 align-middle max-w-[180px]'>
+                {g.eventId > 0 ? (
+                  <HashSmoothLink
+                    href={tournamentGameHref(g.eventId, g.gameName, g.gameId)}
+                    className='text-primary hover:underline text-xs block max-w-full'
+                  >
+                    {g.seasonIndex > 0 && (
+                      <span className='block truncate'>S{g.seasonIndex}</span>
+                    )}
+                    <span
+                      className='block truncate'
+                      title={g.gameName ?? undefined}
+                    >
+                      {g.gameName ?? '—'}
+                    </span>
+                  </HashSmoothLink>
+                ) : (
+                  <div className='text-xs text-muted-foreground'>
+                    {g.seasonIndex > 0 && (
+                      <span className='block truncate'>S{g.seasonIndex}</span>
+                    )}
+                    <span
+                      className='block truncate'
+                      title={g.gameName ?? undefined}
+                    >
+                      {g.gameName ?? '—'}
+                    </span>
                   </div>
                 )}
               </td>
-              <td className='py-2 pr-3 align-top'>
+              <td className='py-2 pr-3 align-middle'>
                 <div className='flex flex-wrap items-center gap-1.5'>
                   <Link
                     href={leaguePlayerProfileHref(g.playerA)}
@@ -326,13 +382,13 @@ function MatchupGameTable({
                   </Link>
                 </div>
               </td>
-              <td className='py-2 pr-3 tabular-nums align-top'>
+              <td className='py-2 pr-3 tabular-nums align-middle'>
                 {g.scoreA ?? '—'} – {g.scoreB ?? '—'}
               </td>
-              <td className='py-2 pr-3 tabular-nums align-top'>
+              <td className='py-2 pr-3 tabular-nums align-middle'>
                 {formatLeagueBidPair(g.bidA, g.bidB)}
               </td>
-              <td className='py-2 align-top'>
+              <td className='py-2 align-middle'>
                 {g.winnerUsername ? (
                   <div className='flex items-center gap-1.5'>
                     {g.winnerFaction && (

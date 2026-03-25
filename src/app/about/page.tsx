@@ -1,5 +1,6 @@
 import { getEventsByYear, sortEventsByDate, type Event } from '@/lib/events'
 import EventLink from '@/components/event-link'
+import Link from 'next/link'
 
 // Revalidate every hour to keep event list fresh
 export const revalidate = 3600
@@ -12,9 +13,9 @@ export default async function About() {
         <div className='space-y-4'>
           <p className='text-3xl font-bold text-primary'>About</p>
           <p>
-            Scythe is a competitive 4x board game by Stonemaier games. From its
+            Scythe is a competitive 4x board game by Stonemaier Games. From its
             critically acclaimed release in 2016, Scythe has established itself
-            in the board gaming world for its strategic gameplay & thematic
+            in the board gaming world for its strategic gameplay and thematic
             design elements alike. With its depth of engine-building, asymmetric
             design, and 1920+ world, Scythe is often referenced as one of the
             best games ever made.
@@ -38,13 +39,41 @@ export default async function About() {
         </div>
 
         <div className='space-y-4'>
+          <p className='text-2xl font-bold text-primary'>This website</p>
+          <p>
+            This app tracks competitive Scythe events and results. Explore{' '}
+            <Link
+              href='/tournament'
+              className='pointer-events-auto text-primary font-semibold hover:underline'
+            >
+              tournaments
+            </Link>
+            , browse player pages on the{' '}
+            <Link
+              href='/leaderboard'
+              className='pointer-events-auto text-primary font-semibold hover:underline'
+            >
+              leaderboard
+            </Link>
+            , and review 1v1 League seasons under the{' '}
+            <Link
+              href='/league'
+              className='pointer-events-auto text-primary font-semibold hover:underline'
+            >
+              League
+            </Link>{' '}
+            section.
+          </p>
+        </div>
+
+        <div className='space-y-4'>
           <p className='text-2xl font-bold text-primary'>
             What is Tournament Rating?
           </p>
           <p>
             Tournament Rating is a method of assessing and measuring player
             skill in multiplayer games like Scythe. The working model for
-            tournament rating is derived from the{' '}
+            Tournament Rating is derived from the{' '}
             <a
               className='pointer-events-auto text-primary font-semibold'
               href='https://openskill.me/en/stable/index.html'
@@ -57,6 +86,11 @@ export default async function About() {
             models when analyzing the results of competitive multiplayer games.
             With Scythe tournaments being played in a variety of formats, this
             modeling system is a great fit for the competitive Scythe community.
+          </p>
+          <p>
+            In this app, the leaderboard rating is calculated from 3- and
+            4-player events (2-player events are tracked as tournaments, but do
+            not affect the leaderboard rating).
           </p>
           <p>
             New players are introduced into the rating system with a default
@@ -78,14 +112,13 @@ export default async function About() {
         </div>
         <div className='space-y-4'>
           <p className='text-2xl font-bold text-primary'>
-            What events contribute to Tournament Rating?
+            Which events affect Tournament Rating?
           </p>
           <p>
-            While we have not been able to collect perfect records of every
-            competitive event, organizers and community members have done a
-            great job preserving the history of competitive Scythe. Through
-            those efforts the following events have been fully recorded and
-            processed into the current tournament rating system:
+            While we may not have perfect records of every competitive event,
+            the events listed below are those currently flagged in the database
+            as rating events. They are grouped by year and form the input set
+            for the Tournament Rating system.
           </p>
           {sortedYears.length > 0 ? (
             sortedYears.map((year: number) => {
@@ -116,14 +149,18 @@ export default async function About() {
 
         <div className='space-y-4'>
           <p className='text-primary text-2xl font-bold'>
-            What about other events?
+            What about 1v1 League?
           </p>
           <p>
-            There are plans to expand the rating system to include other event
-            formats, most notably the 1v1 League seasons frequently run on
-            discord. Currently, the tournament rating system will continue to
-            collect the results of 3 and 4 player events as other features are
-            developed.
+            1v1 League seasons are tracked separately in the{' '}
+            <Link
+              href='/league'
+              className='pointer-events-auto text-primary font-semibold hover:underline'
+            >
+              League
+            </Link>{' '}
+            section. Use those pages to review league standings, player history,
+            and matchup stats for each season and tier.
           </p>
         </div>
       </div>
