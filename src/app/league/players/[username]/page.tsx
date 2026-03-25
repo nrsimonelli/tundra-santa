@@ -12,36 +12,11 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
+import { KpiCard } from '@/components/kpi-card'
 import { formatLeagueBid } from '@/lib/league-format'
 import { globalLeaderboardHref } from '@/lib/league-links'
 
 export const revalidate = 3600
-
-function KpiCard({
-  label,
-  value,
-  hint,
-}: {
-  label: string
-  value: string
-  hint?: string
-}) {
-  return (
-    <div className='rounded-lg border bg-card/50 p-4 shadow-sm'>
-      <p className='text-xs font-medium text-muted-foreground uppercase tracking-wide'>
-        {label}
-      </p>
-      <p className='mt-1 text-2xl font-semibold tabular-nums tracking-tight'>
-        {value}
-      </p>
-      {hint && (
-        <p className='mt-1 text-[11px] text-muted-foreground leading-snug'>
-          {hint}
-        </p>
-      )}
-    </div>
-  )
-}
 
 export default async function LeaguePlayerPage({
   params,
