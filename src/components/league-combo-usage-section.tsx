@@ -28,7 +28,14 @@ import {
   LEAGUE_FACTION_ICON_ORDER,
   PLAYER_MAT_ORDER,
 } from '@/lib/league-format'
+import {
+  RECHARTS_AXIS_STROKE,
+  RECHARTS_GRID_STROKE,
+  RECHARTS_LABEL_FILL,
+  RECHARTS_TICK,
+} from '@/lib/recharts-theme'
 import { cn } from '@/lib/utils'
+import { RechartsTooltipCard } from '@/components/recharts-tooltip-card'
 
 type Props = {
   comboStats: ComboStat[]
@@ -114,21 +121,38 @@ export function LeagueComboUsageSection({ comboStats }: Props) {
             layout='vertical'
             margin={{ top: 8, right: 48, left: 8, bottom: 8 }}
           >
-            <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
-            <XAxis type='number' tick={{ fontSize: 12 }} />
+            <CartesianGrid
+              strokeDasharray='3 3'
+              stroke={RECHARTS_GRID_STROKE}
+            />
+            <XAxis
+              type='number'
+              tick={RECHARTS_TICK}
+              stroke={RECHARTS_AXIS_STROKE}
+            />
             <YAxis
               type='category'
               dataKey='label'
               width={112}
-              tick={{ fontSize: 12 }}
+              tick={RECHARTS_TICK}
+              stroke={RECHARTS_AXIS_STROKE}
               interval={0}
             />
             <Tooltip
-              contentStyle={{ fontSize: 12 }}
-              formatter={(value: number) => [value, 'Games']}
-              labelFormatter={(_, payload) =>
-                (payload?.[0]?.payload?.label as string) ?? ''
-              }
+              content={({ active, payload }) => {
+                if (!active || !payload?.length) return null
+                const row = payload[0].payload as { label: string; games: number }
+                return (
+                  <RechartsTooltipCard>
+                    <p className='font-medium text-popover-foreground'>
+                      {row.label}
+                    </p>
+                    <p className='text-muted-foreground'>
+                      Games: {row.games}
+                    </p>
+                  </RechartsTooltipCard>
+                )
+              }}
             />
             <Bar
               dataKey='games'
@@ -136,7 +160,12 @@ export function LeagueComboUsageSection({ comboStats }: Props) {
               fill='hsl(var(--primary))'
               radius={[0, 4, 4, 0]}
             >
-              <LabelList dataKey='games' position='right' fontSize={12} />
+              <LabelList
+                dataKey='games'
+                position='right'
+                fontSize={12}
+                fill={RECHARTS_LABEL_FILL}
+              />
             </Bar>
           </BarChart>
         </ResponsiveContainer>

@@ -75,6 +75,41 @@
     --ring: 224.3 76.3% 48%;
   }
 
+  /* Saxony: neutral gray ramp + muted gold accent (overrides shared dark block above). */
+  :root[data-faction='saxony'] {
+    --gradient-from: #161616;
+    --gradient-to: #000000;
+    --hero-foreground: 0 0% 98%;
+
+    --background: 0 0% 4%;
+    --foreground: 0 0% 96%;
+
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 96%;
+
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 96%;
+
+    --primary: 43 42% 52%;
+    --primary-foreground: 0 0% 10%;
+
+    --secondary: 0 0% 14%;
+    --secondary-foreground: 0 0% 96%;
+
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 62%;
+
+    --accent: 0 0% 16%;
+    --accent-foreground: 0 0% 96%;
+
+    --destructive: 0 62.8% 36%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 43 42% 52%;
+  }
+
   /* Faction accents: set `data-faction` on documentElement (see faction-ui-theme.ts). */
   :root[data-faction='albion'] {
     --gradient-from: #166534;
@@ -91,18 +126,54 @@
   }
 
   :root[data-faction='polania'] {
-    --gradient-from: #94a3b8;
-    --gradient-to: #e2e8f0;
-    --primary: 221 83% 45%;
-    --ring: 221 83% 45%;
-    --hero-foreground: 222.2 84% 12%;
-  }
-
-  :root[data-faction='rusviet'] {
     --gradient-from: #7f1d1d;
     --gradient-to: #ef4444;
     --primary: 0 72% 51%;
     --ring: 0 72% 51%;
+  }
+
+  /* Rusviet: red surfaces, white body text; hero = white → off-white; nav/title red via --hero-foreground. */
+  :root[data-faction='rusviet'] {
+    color-scheme: light;
+
+    --hero-gradient-from: #ffffff;
+    --hero-gradient-to: #f2f2f4;
+
+    /* Charts / gradient text: near-white ramp (not the hero band). */
+    --gradient-from: #ffffff;
+    --gradient-to: #fff1f2;
+
+    --hero-foreground: 0 62% 38%;
+
+    --background: 0 62% 40%;
+    --foreground: 0 0% 100%;
+
+    /* Same red as page; elevation comes from shadow on shells, not a lighter fill. */
+    --card: 0 61% 44%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 0 62% 40%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 0 0% 99%;
+    --primary-foreground: 0 60% 28%;
+
+    --secondary: 0 58% 44%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 0 56% 42%;
+    --muted-foreground: 0 0% 94%;
+
+    --accent: 0 58% 52%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 32%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Same hue/chroma as --background; only ~3–4% lower L so rules don’t read brown/maroon. */
+    --border: 0 62% 36%;
+    --input: 0 62% 36%;
+    --ring: 0 62% 38%;
   }
 
   :root[data-faction='togawa'] {

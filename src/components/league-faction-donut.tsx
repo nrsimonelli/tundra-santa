@@ -7,6 +7,7 @@ import {
   factionChartSegmentStroke,
 } from '@/lib/faction-chart-colors'
 import { FactionImage } from '@/components/faction-image'
+import { RechartsTooltipCard } from '@/components/recharts-tooltip-card'
 import { cn } from '@/lib/utils'
 
 type Props = {
@@ -66,9 +67,9 @@ export function LeagueFactionDonut({ rows }: Props) {
                 if (!active || !payload?.length) return null
                 const p = payload[0].payload as Slice
                 return (
-                  <div className='rounded-md border bg-popover px-2.5 py-1.5 text-sm text-popover-foreground shadow-md'>
+                  <RechartsTooltipCard>
                     {p.displayName}: {p.value}
-                  </div>
+                  </RechartsTooltipCard>
                 )
               }}
             />

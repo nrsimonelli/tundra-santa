@@ -8,6 +8,8 @@ import {
   YAxis,
   Tooltip,
 } from 'recharts'
+import { RechartsTooltipCard } from '@/components/recharts-tooltip-card'
+import { RECHARTS_AXIS_STROKE, RECHARTS_TICK } from '@/lib/recharts-theme'
 
 type ChartDataPoint = {
   id: number
@@ -45,15 +47,15 @@ export function Chart({ data }: { data: ChartDataPoint[] }) {
     if (active && payload && payload.length > 0) {
       const dataPoint = payload[0].payload
       return (
-        <div className='bg-background border border-border rounded-md p-2 shadow-md'>
-          <p className='font-semibold'>
+        <RechartsTooltipCard>
+          <p className='font-semibold text-popover-foreground'>
             {dataPoint.fullName || dataPoint.name}
           </p>
           <p className='text-sm text-muted-foreground'>
             Rating: {dataPoint.rating}
           </p>
           <p className='text-sm text-muted-foreground'>{dataPoint.date}</p>
-        </div>
+        </RechartsTooltipCard>
       )
     }
     return null
@@ -77,10 +79,10 @@ export function Chart({ data }: { data: ChartDataPoint[] }) {
         </defs>
         <XAxis
           dataKey='timestamp'
-          stroke='#888888'
+          stroke={RECHARTS_AXIS_STROKE}
           tickLine={false}
           axisLine={false}
-          fontSize={10}
+          tick={{ ...RECHARTS_TICK, fontSize: 10 }}
           tickFormatter={formatTick}
           type='number'
           domain={['dataMin', 'dataMax']}
@@ -92,10 +94,10 @@ export function Chart({ data }: { data: ChartDataPoint[] }) {
           interval={0}
         />
         <YAxis
-          stroke='#888888'
+          stroke={RECHARTS_AXIS_STROKE}
           tickLine={false}
           axisLine={false}
-          fontSize={12}
+          tick={RECHARTS_TICK}
           domain={[
             (dataMin: number) => (dataMin < 1200 ? dataMin - 100 : 1200),
             (dataMax: number) => (dataMax > 2000 ? dataMax + 100 : 2000),
