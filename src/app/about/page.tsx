@@ -120,7 +120,7 @@ export default async function About() {
           </p>
           <p>
             There are plans to expand the rating system to include other event
-            formats, most notably the 1v1 League-style events frequently run on
+            formats, most notably the 1v1 League seasons frequently run on
             discord. Currently, the tournament rating system will continue to
             collect the results of 3 and 4 player events as other features are
             developed.

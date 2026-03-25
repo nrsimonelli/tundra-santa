@@ -66,7 +66,7 @@ export function LeagueComboUsageSection({ comboStats }: Props) {
           games: stat?.games ?? 0,
         }
       }),
-    [byFactionMat, faction]
+    [byFactionMat, faction],
   )
 
   const chartData = useMemo(
@@ -76,7 +76,7 @@ export function LeagueComboUsageSection({ comboStats }: Props) {
         label: r.label,
         games: r.games,
       })),
-    [faction, matRows]
+    [faction, matRows],
   )
 
   const usageShare = (games: number) =>
@@ -97,11 +97,11 @@ export function LeagueComboUsageSection({ comboStats }: Props) {
               className={cn(
                 'rounded-full p-1 transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                 selected
-                  ? 'ring-2 ring-primary ring-offset-2 ring-offset-background shadow-sm'
-                  : 'opacity-70 hover:opacity-100'
+                  ? 'ring-2 ring-primary shadow-sm'
+                  : 'opacity-70 hover:opacity-100',
               )}
             >
-              <FactionImage faction={f} width={36} height={36} />
+              <FactionImage faction={f} width={40} height={40} />
             </button>
           )
         })}

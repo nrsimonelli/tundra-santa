@@ -19,10 +19,15 @@ export default async function LeagueAllTimePage() {
   if (!data) {
     return (
       <div className='max-w-5xl mx-auto shadow-lg -mt-20 z-10 bg-background rounded-md p-8 border'>
-        <h2 className='text-2xl font-semibold'>All-time league</h2>
-        <p className='text-muted-foreground mt-2'>Could not load league participation data.</p>
-        <Link href='/league' className='text-primary font-medium hover:underline mt-4 inline-block'>
-          League analytics
+        <h2 className='text-2xl font-semibold'>All-time standings</h2>
+        <p className='text-muted-foreground mt-2'>
+          Could not load all-time league standings.
+        </p>
+        <Link
+          href='/league'
+          className='text-primary font-medium hover:underline mt-4 inline-block'
+        >
+          League
         </Link>
       </div>
     )
@@ -31,17 +36,23 @@ export default async function LeagueAllTimePage() {
   return (
     <div className='max-w-5xl mx-auto shadow-lg -mt-20 z-10 bg-background rounded-md p-6 md:p-8 border space-y-8'>
       <header className='space-y-4 border-b pb-6'>
-        <Link href='/league' className='text-sm text-primary font-medium hover:underline'>
+        <Link
+          href='/league'
+          className='text-sm text-primary font-medium hover:underline'
+        >
           ← League (latest season)
         </Link>
-        <h2 className='text-2xl md:text-3xl font-semibold'>All-time league standings</h2>
+        <h2 className='text-2xl md:text-3xl font-semibold'>
+          All-time standings
+        </h2>
         <p className='text-muted-foreground max-w-2xl'>
-          {data.scopeLabel}. Ranks compare wins <strong>lexicographically by tier</strong> (more wins
-          at T1, then T2, and so on, then Unspecified), then win rate, then total wins. Lower-tier
-          wins never rank above higher-tier wins when the higher-tier win counts differ.
+          {data.scopeLabel}. Rankings prioritize wins in higher tiers first (T1,
+          then T2, and so on, then Unspecified), followed by overall win rate,
+          total wins, and fewer losses.
         </p>
         <p className='text-sm text-muted-foreground'>
-          {data.totalGames} recorded 1v1 games across all seasons · {data.rows.length} players
+          {data.totalGames} recorded 1v1 games across all seasons ·{' '}
+          {data.rows.length} players
         </p>
       </header>
 
@@ -59,7 +70,7 @@ export default async function LeagueAllTimePage() {
           </TableHeader>
           <TableBody>
             {data.rows.map((row, index) => (
-              <TableRow key={row.playerId}>
+              <TableRow key={`all-time-row-${row.playerId}`}>
                 <TableCell className='tabular-nums'>{index + 1}</TableCell>
                 <TableCell>
                   <Link
@@ -76,7 +87,9 @@ export default async function LeagueAllTimePage() {
                   <WinRateBar rate={row.winRate} />
                 </TableCell>
                 <TableCell className='tabular-nums'>{row.games}</TableCell>
-                <TableCell className='tabular-nums'>{row.seasonsPlayed}</TableCell>
+                <TableCell className='tabular-nums'>
+                  {row.seasonsPlayed}
+                </TableCell>
               </TableRow>
             ))}
             {data.rows.length === 0 && (

@@ -264,7 +264,7 @@ function resolveLeagueScope(
   if (scopeKey === 'all') {
     return {
       eventIds: allEvents.map((e) => e.id),
-      scopeLabel: 'All league events',
+      scopeLabel: 'All seasons',
     }
   }
   const id = Number.parseInt(scopeKey, 10)
@@ -1030,7 +1030,7 @@ export async function getCachedLeagueAllTimeStandings(): Promise<LeagueAllTimeSt
       const eventIds = events.map((e) => e.id)
       if (eventIds.length === 0) {
         return {
-          scopeLabel: 'All league events',
+          scopeLabel: 'All seasons',
           totalGames: 0,
           rows: [],
         }
@@ -1050,7 +1050,7 @@ export async function getCachedLeagueAllTimeStandings(): Promise<LeagueAllTimeSt
 
       if (!games.length) {
         return {
-          scopeLabel: 'All league events',
+          scopeLabel: 'All seasons',
           totalGames: 0,
           rows: [],
         }
@@ -1163,7 +1163,7 @@ export async function getCachedLeagueAllTimeStandings(): Promise<LeagueAllTimeSt
       )
 
       return {
-        scopeLabel: 'All league events',
+        scopeLabel: 'All seasons',
         totalGames: twoPlayerCount,
         rows,
       }

@@ -74,7 +74,7 @@ export function LeagueMatchupSection({
           `/api/league/matchup-games?scope=${encodeURIComponent(scope)}&slug=${encodeURIComponent(slug)}${tierQ}`
         )
         if (!res.ok) {
-          setGamesError('Could not load games.')
+          setGamesError('Could not load matchup games.')
           return
         }
         const data = (await res.json()) as { games: LeagueMatchupGameRow[] }
@@ -160,7 +160,7 @@ export function LeagueMatchupSection({
                 <div className='border-t px-4 py-3 space-y-2 bg-muted/20'>
                   {mats.length === 0 && (
                     <p className='text-sm text-muted-foreground'>
-                      No mat-level pairs meet the min sample ({minGames}) for this faction
+                      No combo matchups meet the minimum sample ({minGames}) for this faction
                       pairing.
                     </p>
                   )}
@@ -209,7 +209,7 @@ export function LeagueMatchupSection({
         })}
         {factionMatchups.length === 0 && (
           <p className='text-sm text-muted-foreground'>
-            No faction matchups meet the min sample for this filter.
+            No faction matchups meet the minimum sample for this filter.
           </p>
         )}
       </div>
@@ -256,7 +256,7 @@ export function LeagueMatchupSection({
       ))}
       {matchups.length === 0 && (
         <p className='text-sm text-muted-foreground'>
-          No combo matchups meet the min sample for this scope and tier filter.
+          No combo matchups meet the minimum sample for this scope and tier filter.
         </p>
       )}
     </div>
@@ -273,7 +273,7 @@ function MatchupGameTable({
   error: string | null
 }) {
   if (loading) {
-    return <p className='text-sm text-muted-foreground py-2'>Loading games…</p>
+    return <p className='text-sm text-muted-foreground py-2'>Loading matchup games…</p>
   }
   if (error) {
     return <p className='text-sm text-destructive py-2'>{error}</p>
@@ -281,7 +281,7 @@ function MatchupGameTable({
   if (!games?.length) {
     return (
       <p className='text-sm text-muted-foreground py-2'>
-        No games in scope for this pairing.
+        No games were found for this matchup in the current filters.
       </p>
     )
   }

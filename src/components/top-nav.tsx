@@ -12,11 +12,11 @@ export const TopNav = () => {
           <Link href={'/about'} prefetch={true}>
             About
           </Link>
+          <Link href={'/league'} prefetch={true}>
+            1v1 League
+          </Link>
           <Link href={'/tournament'} prefetch={true}>
             Tournaments
-          </Link>
-          <Link href={'/league'} prefetch={true}>
-            League
           </Link>
           <Link href={'/leaderboard'} prefetch={true}>
             Leaderboard

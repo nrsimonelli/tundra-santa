@@ -60,7 +60,7 @@ export default async function LeaguePlayerPage({
           href='/league'
           className='text-primary hover:underline font-semibold mt-4 inline-block'
         >
-          League analytics
+          League
         </Link>
       </div>
     )
@@ -83,7 +83,7 @@ export default async function LeaguePlayerPage({
           href='/league'
           className='text-sm text-primary font-medium hover:underline'
         >
-          ← League analytics
+          ← League
         </Link>
         <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
           <div>
@@ -122,10 +122,9 @@ export default async function LeaguePlayerPage({
           <p className='text-sm text-muted-foreground max-w-3xl'>
             Seasons are numbered <strong>S1…Sn</strong> with{' '}
             <strong>S1 oldest</strong>. <strong>Tier</strong> is the tag from
-            game names you played most that season. <strong>Rank</strong> is
-            your standing in that season for that tier (sorted like league
-            standings: win rate, then wins), among everyone with at least one
-            game in that tier.
+            game names you played most that season. <strong>Rank</strong> uses
+            the same season standings order for that tier: win rate, then wins,
+            then fewer losses.
           </p>
           <Table>
             <TableHeader>
@@ -140,7 +139,7 @@ export default async function LeaguePlayerPage({
             </TableHeader>
             <TableBody>
               {profile.seasonRows.map((row) => (
-                <TableRow key={row.seasonIndex}>
+                <TableRow key={`season-row-${row.seasonIndex}`}>
                   <TableCell>
                     <span className='rounded-md border px-2 py-0.5 text-xs font-semibold bg-muted/40'>
                       S{row.seasonIndex}

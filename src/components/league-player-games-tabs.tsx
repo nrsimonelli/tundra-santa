@@ -121,7 +121,7 @@ export function LeaguePlayerGamesTabs({ games }: Props) {
           {visible.length === 0 && (
             <TableRow>
               <TableCell colSpan={8} className='text-muted-foreground'>
-                No games in this season.
+                No games were found for this season.
               </TableCell>
             </TableRow>
           )}

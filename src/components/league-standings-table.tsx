@@ -33,7 +33,9 @@ export function LeagueStandingsTable({
       </TableHeader>
       <TableBody>
         {standings.map((row, index) => (
-          <TableRow key={row.playerId}>
+          <TableRow
+            key={`league-standings-row-${row.playerId}-${row.username}-${index}`}
+          >
             <TableCell>{index + 1}</TableCell>
             <TableCell>
               <Link
@@ -50,9 +52,7 @@ export function LeagueStandingsTable({
               <WinRateBar rate={row.winRate} />
             </TableCell>
             <TableCell className='tabular-nums'>{row.games}</TableCell>
-            <TableCell className='tabular-nums'>
-              {row.seasonsPlayed}
-            </TableCell>
+            <TableCell className='tabular-nums'>{row.seasonsPlayed}</TableCell>
             <TableCell>{row.avgScoreDiff.toFixed(2)}</TableCell>
             <TableCell>{formatLeagueBid(row.avgBid)}</TableCell>
           </TableRow>
@@ -60,7 +60,7 @@ export function LeagueStandingsTable({
         {standings.length === 0 && (
           <TableRow>
             <TableCell colSpan={8} className='text-muted-foreground'>
-              No players meet the min games threshold in this tier.
+              No players meet the minimum sample for this tier.
             </TableCell>
           </TableRow>
         )}

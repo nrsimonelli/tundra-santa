@@ -39,7 +39,9 @@ export default async function LeagueScopePage({
   const query = await searchParams
   const tierFilter = query.tier || null
   const minGames = Number(query.minGames ?? '5')
-  const effectiveMinGames = Number.isFinite(minGames) ? Math.max(1, minGames) : 5
+  const effectiveMinGames = Number.isFinite(minGames)
+    ? Math.max(1, minGames)
+    : 5
   const initialMatchup =
     typeof query.matchup === 'string' && query.matchup.length > 0
       ? query.matchup
@@ -53,22 +55,30 @@ export default async function LeagueScopePage({
   if (!analytics) {
     return (
       <div className='max-w-5xl mx-auto shadow-lg -mt-20 z-10 bg-background rounded-md p-8 border space-y-4'>
-        <h2 className='text-2xl font-semibold'>League scope not found</h2>
+        <h2 className='text-2xl font-semibold'>League view not found</h2>
         <p className='text-muted-foreground'>
-          Use a valid league event id, or choose &quot;All league events&quot; from the league page.
+          This season or scope is unavailable. Start from the latest season and
+          use the Season filters to switch views.
         </p>
-        <Link href='/league' className='text-primary hover:underline font-semibold'>
-          Go to league analytics
+        <Link
+          href='/league'
+          className='text-primary hover:underline font-semibold'
+        >
+          Go to League
         </Link>
       </div>
     )
   }
 
-  const searchSuffix = buildQueryHref(tierFilter, effectiveMinGames, initialMatchup)
+  const searchSuffix = buildQueryHref(
+    tierFilter,
+    effectiveMinGames,
+    initialMatchup,
+  )
   const seasons = leagueSeasonsByStartDateAsc(eventOptions)
   const tierOptions = ['all', ...analytics.tiers.sort(compareLeagueTierLabels)]
-  const minGamesOptions = [3, 5, 8, 12]
-  const currentTier = tierFilter ?? 'all'
+  const minGamesOptions = [3, 5, 9]
+  const currentTier = tierFilter ?? 'T1'
   const isAllScope = scope === 'all'
 
   const concreteTierList = [...analytics.tiers].sort(compareLeagueTierLabels)
@@ -82,19 +92,20 @@ export default async function LeagueScopePage({
       <header className='space-y-4 border-b pb-6'>
         <div className='flex flex-col gap-2 md:flex-row md:items-start md:justify-between'>
           <div>
-            <h2 className='text-2xl md:text-3xl font-semibold'>1v1 League Analytics</h2>
+            <h2 className='text-2xl md:text-3xl font-semibold'>League</h2>
             <p className='text-muted-foreground mt-1 max-w-2xl'>
               {analytics.scopeLabel}
             </p>
             <p className='text-sm text-muted-foreground mt-2'>
-              {analytics.totalGames} recorded 1v1 games · {analytics.totalPlayers} players
+              {analytics.totalGames} recorded 1v1 games across{' '}
+              {analytics.totalPlayers} players
             </p>
             <p className='text-sm pt-2'>
               <Link
                 href='/league/standings/all-time'
                 className='text-primary font-medium hover:underline'
               >
-                All-time standings (all seasons)
+                View all-time standings
               </Link>
             </p>
           </div>
@@ -116,7 +127,7 @@ export default async function LeagueScopePage({
               const active = scope !== 'all' && scope === String(row.eventId)
               return (
                 <Button
-                  key={n}
+                  key={`season-select-button-${n}`}
                   size='sm'
                   variant={active ? 'default' : 'outline'}
                   asChild
@@ -129,8 +140,13 @@ export default async function LeagueScopePage({
               )
             }
             return (
-              <Button key={n} size='sm' variant='outline' disabled>
-                {n}
+              <Button
+                key={`season-select-button-${n}`}
+                size='sm'
+                variant='outline'
+                disabled
+              >
+                S{n}
               </Button>
             )
           })}
@@ -140,25 +156,28 @@ export default async function LeagueScopePage({
           <span className='text-sm text-muted-foreground mr-1'>Tier:</span>
           {tierOptions.map((tier) => (
             <Button
-              key={tier}
+              key={`tier-select-button-${tier}`}
               size='sm'
+              className='capitalize'
               variant={currentTier === tier ? 'default' : 'outline'}
               asChild
             >
               <Link
                 href={`/league/${scope}${buildQueryHref(tier === 'all' ? null : tier, effectiveMinGames, initialMatchup)}`}
               >
-                {tier.toUpperCase()}
+                {tier}
               </Link>
             </Button>
           ))}
         </div>
 
         <div className='flex flex-wrap items-center gap-2'>
-          <span className='text-sm text-muted-foreground mr-1'>Min sample (tables):</span>
+          <span className='text-sm text-muted-foreground mr-1'>
+            Minimum sample:
+          </span>
           {minGamesOptions.map((option) => (
             <Button
-              key={option}
+              key={`game-min-sample-${option}`}
               size='sm'
               variant={effectiveMinGames === option ? 'default' : 'outline'}
               asChild
@@ -178,12 +197,14 @@ export default async function LeagueScopePage({
           <h3 className='text-xl font-semibold'>Matchups</h3>
           <p className='text-sm text-muted-foreground'>
             {isAllScope
-              ? 'Faction pairs — expand for mat-level combos, then game history.'
-              : 'Combo vs combo — expand for every game and result.'}
+              ? 'Faction matchups across all seasons. Expand a row for combo details and game history.'
+              : 'Combo matchups for this season. Expand a row to review game-level results.'}
           </p>
         </div>
         <Suspense
-          fallback={<p className='text-sm text-muted-foreground'>Loading matchups…</p>}
+          fallback={
+            <p className='text-sm text-muted-foreground'>Loading matchups…</p>
+          }
         >
           <LeagueMatchupSection
             scope={scope}
@@ -200,12 +221,12 @@ export default async function LeagueScopePage({
       <section className='space-y-3'>
         <h3 className='text-xl font-semibold'>Standings</h3>
         <p className='text-sm text-muted-foreground max-w-2xl'>
-          Rankings are computed per tier only (same tier and min sample as above). Tiers are never
-          mixed in one ranked list.
+          Rankings are calculated within a single tier using the current minimum
+          sample. Tiers are never combined in one table.
         </p>
         {currentTier === 'all' && (
           <p className='text-sm text-muted-foreground'>
-            Select a tier above to load the standings table for that tier only.
+            Choose a tier above to view standings.
           </p>
         )}
         {invalidTier && (
@@ -225,7 +246,10 @@ export default async function LeagueScopePage({
       </section>
 
       <section className='space-y-3'>
-        <h3 className='text-xl font-semibold'>Combo usage</h3>
+        <h3 className='text-xl font-semibold'>Combination usage</h3>
+        <p className='text-sm text-muted-foreground max-w-2xl'>
+          Usage and performance by selected Faction.
+        </p>
         <LeagueComboUsageSection comboStats={analytics.comboStats} />
       </section>
     </div>

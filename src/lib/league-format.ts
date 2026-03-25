@@ -1,27 +1,27 @@
 const EM_DASH = '—'
 
-/** All Scythe player mats (stable display / chart order). */
+// Mats by in turn order sequence
 export const PLAYER_MAT_ORDER = [
-  'agricultural',
-  'engineering',
   'industrial',
-  'innovative',
-  'mechanical',
+  'engineering',
   'militant',
   'patriotic',
+  'innovative',
+  'mechanical',
+  'agricultural',
 ] as const
 
 export type PlayerMatId = (typeof PLAYER_MAT_ORDER)[number]
 
-/** Faction order for league UI icon strips (alphabetical by id). */
+// factions in clockwise sequence
 export const LEAGUE_FACTION_ICON_ORDER = [
-  'albion',
-  'crimea',
   'nordic',
-  'polania',
   'rusviet',
-  'saxony',
   'togawa',
+  'crimea',
+  'saxony',
+  'polania',
+  'albion',
 ] as const
 
 /** Title-style label for DB mat ids (e.g. `industrial` → `Industrial`). */
@@ -50,7 +50,7 @@ export function formatLeagueBid(value: number | null | undefined): string {
  */
 export function formatLeagueBidPair(
   a: number | null | undefined,
-  b: number | null | undefined
+  b: number | null | undefined,
 ): string {
   const aOk = isUsableNumber(a)
   const bOk = isUsableNumber(b)
