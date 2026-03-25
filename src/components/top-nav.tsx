@@ -15,6 +15,9 @@ export const TopNav = () => {
           <Link href={'/tournament'} prefetch={true}>
             Tournaments
           </Link>
+          <Link href={'/league'} prefetch={true}>
+            League
+          </Link>
           <Link href={'/leaderboard'} prefetch={true}>
             Leaderboard
           </Link>

@@ -1,0 +1,21 @@
+import { redirect } from 'next/navigation'
+import { getCachedLeagueEventOptions } from '@/lib/supabase/cached-queries'
+
+export const revalidate = 3600
+
+export default async function LeaguePage() {
+  const options = await getCachedLeagueEventOptions()
+
+  if (options.length === 0) {
+    return (
+      <div className='max-w-5xl mx-auto shadow-lg -mt-20 z-10 bg-background rounded-md p-8 border'>
+        <h2 className='text-2xl font-semibold mb-2'>1v1 League Analytics</h2>
+        <p className='text-muted-foreground'>
+          No league events found (2-player events whose name contains &quot;league&quot;).
+        </p>
+      </div>
+    )
+  }
+
+  redirect(`/league/${options[0].id}`)
+}

@@ -261,3 +261,34 @@ export async function getCachedEvent(eventId: number) {
     }
   )()
 }
+
+export type {
+  LeagueEventOption,
+  LeagueStanding,
+  ComboStat,
+  ComboMatchupStat,
+  FactionMatchupSummary,
+  FactionMatchupCell,
+  BidBucketStat,
+  LeagueSeasonAnalytics,
+  FactionMatGridCell,
+  LeagueFactionMatGrid,
+  LeagueAllTimeRow,
+  LeagueAllTimeStandings,
+  LeagueMatchupGameRow,
+  LeaguePlayerGameRow,
+  LeaguePlayerSeasonRow,
+  LeaguePlayerFactionStat,
+  LeaguePlayerProfile,
+} from '@/lib/league-cached-queries'
+
+export {
+  compareLeagueTierLabels,
+  getCachedLeagueEventOptions,
+  getCachedLeagueAnalytics,
+  getCachedLeagueAllTimeStandings,
+  getCachedLeagueFactionMatGrid,
+  getCachedLeagueMatchupDetail,
+  getCachedLeaguePlayerProfile,
+  getCachedLeagueSeasonAnalytics,
+} from '@/lib/league-cached-queries'
