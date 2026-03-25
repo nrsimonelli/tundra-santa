@@ -5,21 +5,25 @@ import {
   getCachedLeagueAnalytics,
   getCachedLeagueEventOptions,
 } from '@/lib/supabase/cached-queries'
-import { LeagueScopeSelect } from '@/components/league-scope-select'
 import { LeagueMatchupSection } from '@/components/league-matchup-section'
 import { LeagueComboUsageSection } from '@/components/league-combo-usage-section'
+import { LeagueStandingsTable } from '@/components/league-standings-table'
 import { Button } from '@/components/ui/button'
+import { leagueSeasonsByStartDateAsc } from '@/lib/league-seasons'
 
 export const revalidate = 3600
 
+const MAX_SEASON_TOGGLE = 7
+
 function buildQueryHref(
-  scope: string,
   tier: string | null,
-  minGames: number
+  minGames: number,
+  matchup: string | null,
 ): string {
   const params = new URLSearchParams()
   if (tier) params.set('tier', tier)
   params.set('minGames', String(minGames))
+  if (matchup) params.set('matchup', matchup)
   const q = params.toString()
   return q ? `?${q}` : ''
 }
@@ -60,11 +64,18 @@ export default async function LeagueScopePage({
     )
   }
 
-  const searchSuffix = buildQueryHref(scope, tierFilter, effectiveMinGames)
+  const searchSuffix = buildQueryHref(tierFilter, effectiveMinGames, initialMatchup)
+  const seasons = leagueSeasonsByStartDateAsc(eventOptions)
   const tierOptions = ['all', ...analytics.tiers.sort(compareLeagueTierLabels)]
   const minGamesOptions = [3, 5, 8, 12]
   const currentTier = tierFilter ?? 'all'
   const isAllScope = scope === 'all'
+
+  const concreteTierList = [...analytics.tiers].sort(compareLeagueTierLabels)
+  const invalidTier =
+    tierFilter != null &&
+    concreteTierList.length > 0 &&
+    !concreteTierList.includes(tierFilter)
 
   return (
     <div className='max-w-5xl mx-auto shadow-lg -mt-20 z-10 bg-background rounded-md p-6 md:p-8 border space-y-10'>
@@ -89,11 +100,41 @@ export default async function LeagueScopePage({
           </div>
         </div>
 
-        <LeagueScopeSelect
-          options={eventOptions}
-          currentScope={scope}
-          searchSuffix={searchSuffix}
-        />
+        <div className='flex flex-wrap items-center gap-2'>
+          <span className='text-sm text-muted-foreground mr-1'>Season:</span>
+          <Button
+            size='sm'
+            variant={scope === 'all' ? 'default' : 'outline'}
+            asChild
+          >
+            <Link href={`/league/all${searchSuffix}`}>All</Link>
+          </Button>
+          {Array.from({ length: MAX_SEASON_TOGGLE }, (_, i) => {
+            const n = i + 1
+            const row = seasons.find((s) => s.seasonIndex === n)
+            if (row) {
+              const active = scope !== 'all' && scope === String(row.eventId)
+              return (
+                <Button
+                  key={n}
+                  size='sm'
+                  variant={active ? 'default' : 'outline'}
+                  asChild
+                  title={row.label}
+                >
+                  <Link href={`/league/${row.eventId}${searchSuffix}`}>
+                    {n}
+                  </Link>
+                </Button>
+              )
+            }
+            return (
+              <Button key={n} size='sm' variant='outline' disabled>
+                {n}
+              </Button>
+            )
+          })}
+        </div>
 
         <div className='flex flex-wrap items-center gap-2'>
           <span className='text-sm text-muted-foreground mr-1'>Tier:</span>
@@ -105,7 +146,7 @@ export default async function LeagueScopePage({
               asChild
             >
               <Link
-                href={`/league/${scope}${buildQueryHref(scope, tier === 'all' ? null : tier, effectiveMinGames)}`}
+                href={`/league/${scope}${buildQueryHref(tier === 'all' ? null : tier, effectiveMinGames, initialMatchup)}`}
               >
                 {tier.toUpperCase()}
               </Link>
@@ -123,7 +164,7 @@ export default async function LeagueScopePage({
               asChild
             >
               <Link
-                href={`/league/${scope}${buildQueryHref(scope, currentTier === 'all' ? null : currentTier, option)}`}
+                href={`/league/${scope}${buildQueryHref(currentTier === 'all' ? null : currentTier, option, initialMatchup)}`}
               >
                 {option}
               </Link>
@@ -159,17 +200,28 @@ export default async function LeagueScopePage({
       <section className='space-y-3'>
         <h3 className='text-xl font-semibold'>Standings</h3>
         <p className='text-sm text-muted-foreground max-w-2xl'>
-          Rankings are computed per tier only. Open the standings page to pick a tier; tiers are
-          never mixed in one ranked list.
+          Rankings are computed per tier only (same tier and min sample as above). Tiers are never
+          mixed in one ranked list.
         </p>
-        <Button asChild variant='secondary' size='sm'>
-          <Link
-            href={`/league/standings/${scope}?minGames=${effectiveMinGames}`}
-            className='font-medium'
-          >
-            Open standings by tier
-          </Link>
-        </Button>
+        {currentTier === 'all' && (
+          <p className='text-sm text-muted-foreground'>
+            Select a tier above to load the standings table for that tier only.
+          </p>
+        )}
+        {invalidTier && (
+          <p className='text-sm text-destructive'>
+            Unknown tier &quot;{tierFilter}&quot;. Pick a tier from the list.
+          </p>
+        )}
+        {currentTier !== 'all' && !invalidTier && (
+          <>
+            <h4 className='text-lg font-semibold'>
+              <span className='text-muted-foreground'>Standings · </span>
+              <span className='text-primary'>{tierFilter}</span>
+            </h4>
+            <LeagueStandingsTable standings={analytics.standings} />
+          </>
+        )}
       </section>
 
       <section className='space-y-3'>
