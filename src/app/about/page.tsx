@@ -8,10 +8,12 @@ export const revalidate = 3600
 export default async function About() {
   const { eventsByYear, sortedYears } = await getEventsByYear()
   return (
-    <div className='max-w-5xl w-full min-w-0 mx-auto shadow-lg -mt-20 z-10 bg-card rounded-md px-4 py-6 sm:px-6'>
-      <div className='space-y-6 max-w-4xl'>
+    <div className='max-w-5xl w-full min-w-0 mx-auto shadow-lg -mt-20 z-10 bg-card rounded-md px-4 py-6 sm:px-6 md:px-8 md:py-8 border'>
+      <div className='space-y-8 max-w-4xl leading-relaxed'>
         <div className='space-y-4'>
-          <p className='text-3xl font-bold text-primary'>About</p>
+          <h1 className='text-2xl md:text-3xl font-semibold tracking-tight text-primary'>
+            About
+          </h1>
           <p>
             Scythe is a competitive 4x board game by Stonemaier Games. From its
             critically acclaimed release in 2016, Scythe has established itself
@@ -38,8 +40,8 @@ export default async function About() {
           </p>
         </div>
 
-        <div className='space-y-4'>
-          <p className='text-2xl font-bold text-primary'>This website</p>
+        <section className='space-y-3'>
+          <h2 className='text-xl font-semibold text-primary'>This website</h2>
           <p>
             This app tracks competitive Scythe events and results. Explore{' '}
             <Link
@@ -64,12 +66,12 @@ export default async function About() {
             </Link>{' '}
             section.
           </p>
-        </div>
+        </section>
 
-        <div className='space-y-4'>
-          <p className='text-2xl font-bold text-primary'>
+        <section className='space-y-3'>
+          <h2 className='text-xl font-semibold text-primary'>
             What is Tournament Rating?
-          </p>
+          </h2>
           <p>
             Tournament Rating is a method of assessing and measuring player
             skill in multiplayer games like Scythe. The working model for
@@ -109,11 +111,11 @@ export default async function About() {
             </a>{' '}
             model from openskill.
           </p>
-        </div>
-        <div className='space-y-4'>
-          <p className='text-2xl font-bold text-primary'>
+        </section>
+        <section className='space-y-3'>
+          <h2 className='text-xl font-semibold text-primary'>
             Which events affect Tournament Rating?
-          </p>
+          </h2>
           <p>
             While we may not have perfect records of every competitive event,
             the events listed below are those currently flagged in the database
@@ -145,12 +147,12 @@ export default async function About() {
               No rating events found in the database.
             </p>
           )}
-        </div>
+        </section>
 
-        <div className='space-y-4'>
-          <p className='text-primary text-2xl font-bold'>
+        <section className='space-y-3'>
+          <h2 className='text-xl font-semibold text-primary'>
             What about 1v1 League?
-          </p>
+          </h2>
           <p>
             1v1 League seasons are tracked separately in the{' '}
             <Link
@@ -162,7 +164,7 @@ export default async function About() {
             section. Use those pages to review league standings, player history,
             and matchup stats for each season and tier.
           </p>
-        </div>
+        </section>
       </div>
     </div>
   )

@@ -90,7 +90,7 @@
     --popover: 0 0% 12%;
     --popover-foreground: 0 0% 96%;
 
-    --primary: 43 42% 52%;
+    --primary: 43 72% 58%;
     --primary-foreground: 0 0% 10%;
 
     --secondary: 0 0% 14%;
@@ -107,7 +107,7 @@
 
     --border: 0 0% 20%;
     --input: 0 0% 20%;
-    --ring: 43 42% 52%;
+    --ring: 43 72% 58%;
   }
 
   /* Faction accents: set `data-faction` on documentElement (see faction-ui-theme.ts). */
