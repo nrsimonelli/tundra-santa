@@ -3,9 +3,12 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
+  :root,
+  :root[data-faction='nordic'] {
     --gradient-from: #495aff;
     --gradient-to: #0acffe;
+    /* Hero title/description on gradient band; overridden by theme/faction */
+    --hero-foreground: 0 0% 100%;
 
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
@@ -36,7 +39,14 @@
     --radius: 0.5rem;
   }
 
-  .dark {
+  .dark,
+  :root[data-faction='saxony'] {
+    color-scheme: dark;
+
+    --gradient-from: #525252;
+    --gradient-to: #000000;
+    --hero-foreground: 0 0% 98%;
+
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
@@ -63,6 +73,43 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 76.3% 48%;
+  }
+
+  /* Faction accents: set `data-faction` on documentElement (see faction-ui-theme.ts). */
+  :root[data-faction='albion'] {
+    --gradient-from: #166534;
+    --gradient-to: #22c55e;
+    --primary: 142 71% 36%;
+    --ring: 142 71% 36%;
+  }
+
+  :root[data-faction='crimea'] {
+    --gradient-from: #854d0e;
+    --gradient-to: #ca8a04;
+    --primary: 38 92% 44%;
+    --ring: 38 92% 44%;
+  }
+
+  :root[data-faction='polania'] {
+    --gradient-from: #94a3b8;
+    --gradient-to: #e2e8f0;
+    --primary: 221 83% 45%;
+    --ring: 221 83% 45%;
+    --hero-foreground: 222.2 84% 12%;
+  }
+
+  :root[data-faction='rusviet'] {
+    --gradient-from: #7f1d1d;
+    --gradient-to: #ef4444;
+    --primary: 0 72% 51%;
+    --ring: 0 72% 51%;
+  }
+
+  :root[data-faction='togawa'] {
+    --gradient-from: #581c87;
+    --gradient-to: #c084fc;
+    --primary: 271 81% 52%;
+    --ring: 271 81% 52%;
   }
 }
 

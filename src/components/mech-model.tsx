@@ -46,7 +46,7 @@ export function MechModel({ url, scale = 1, tintHex }: MechModelProps) {
       tiltAxisX: 0.2 + Math.random() * 0.1,
       tiltAxisZ: 0.08 + Math.random() * 0.14,
     }),
-    [],
+    [url],
   )
 
   useEffect(() => {

@@ -1,13 +1,11 @@
 import Link from 'next/link'
-import { CirclePercent } from 'lucide-react'
+import { FactionThemePicker } from '@/components/faction-theme-picker'
 
 export const TopNav = () => {
   return (
     <div className='top-3 z-10 left-0 w-full absolute'>
       <div className='flex justify-between items-center max-w-5xl h-16 px-6 mx-auto text-background'>
-        <Link href={'/'} prefetch={true}>
-          <CirclePercent className='text-background h-8 w-8' />
-        </Link>
+        <FactionThemePicker />
         <div className='inline-flex space-x-4'>
           <Link href={'/about'} prefetch={true}>
             About

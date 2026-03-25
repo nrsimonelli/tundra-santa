@@ -4,27 +4,9 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
 import { MechModel } from '@/components/mech-model'
+import { useFactionTheme } from '@/components/faction-theme-provider'
 import { factionMechTint } from '@/lib/faction-chart-colors'
-
-const MECH_URLS = [
-  '/mechs/Albion_Mech.glb',
-  '/mechs/Crimean_Mech.glb',
-  '/mechs/Nordic_Mech.glb',
-  '/mechs/Polania_Mech.glb',
-  '/mechs/Rusviet_Mech.glb',
-  '/mechs/Saxony_Mech.glb',
-  '/mechs/Togawa_Mech.glb',
-] as const
-
-const MECH_URL_TO_FACTION: Record<(typeof MECH_URLS)[number], string> = {
-  '/mechs/Albion_Mech.glb': 'albion',
-  '/mechs/Crimean_Mech.glb': 'crimea',
-  '/mechs/Nordic_Mech.glb': 'nordic',
-  '/mechs/Polania_Mech.glb': 'polania',
-  '/mechs/Rusviet_Mech.glb': 'rusviet',
-  '/mechs/Saxony_Mech.glb': 'saxony',
-  '/mechs/Togawa_Mech.glb': 'togawa',
-}
+import { MECH_URLS, FACTION_TO_MECH_URL } from '@/lib/mech-landing'
 
 const MECH_SCALE: Partial<Record<(typeof MECH_URLS)[number], number>> = {
   '/mechs/Albion_Mech.glb': 0.4,
@@ -51,15 +33,13 @@ function WebGLContextLostHandler({
 }
 
 export default function LandingMechs() {
-  const [mechUrl] = useState(
-    () => MECH_URLS[Math.floor(Math.random() * MECH_URLS.length)],
-  )
+  const { activeFactionThemeId } = useFactionTheme()
+  const mechUrl = FACTION_TO_MECH_URL[activeFactionThemeId]
+  const mechTintHex = factionMechTint(activeFactionThemeId)
+
   const [canvasKey, setCanvasKey] = useState(0)
   const lastContextRemountRef = useRef(0)
   const contextRemountCountRef = useRef(0)
-
-  const mechFaction = MECH_URL_TO_FACTION[mechUrl]
-  const mechTintHex = factionMechTint(mechFaction)
 
   const remountCanvas = useCallback(() => {
     setCanvasKey((k) => k + 1)
@@ -98,6 +78,7 @@ export default function LandingMechs() {
         <directionalLight position={[3, 3, 4]} intensity={3.2} />
         <directionalLight position={[-2, -1, 3]} intensity={0.25} />
         <MechModel
+          key={mechUrl}
           url={mechUrl}
           scale={MECH_SCALE[mechUrl] ?? 1}
           tintHex={mechTintHex}
