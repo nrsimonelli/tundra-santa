@@ -7,7 +7,7 @@ export const revalidate = 3600
 export default async function About() {
   const { eventsByYear, sortedYears } = await getEventsByYear()
   return (
-    <div className='max-w-5xl mx-auto shadow-lg -mt-20 z-10 bg-card rounded-md p-6'>
+    <div className='max-w-5xl w-full min-w-0 mx-auto shadow-lg -mt-20 z-10 bg-card rounded-md px-4 py-6 sm:px-6'>
       <div className='space-y-6 max-w-4xl'>
         <div className='space-y-4'>
           <p className='text-3xl font-bold text-primary'>About</p>

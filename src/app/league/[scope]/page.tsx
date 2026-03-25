@@ -69,7 +69,7 @@ export default async function LeagueScopePage({
 
   if (!analytics) {
     return (
-      <div className='max-w-5xl mx-auto shadow-lg -mt-20 z-10 bg-card rounded-md p-8 border space-y-4'>
+      <div className='max-w-5xl w-full min-w-0 mx-auto shadow-lg -mt-20 z-10 bg-card rounded-md px-4 py-8 sm:px-6 border space-y-4'>
         <h2 className='text-2xl font-semibold'>League view not found</h2>
         <p className='text-muted-foreground'>
           This season or scope is unavailable. Start from the latest season and
@@ -104,7 +104,7 @@ export default async function LeagueScopePage({
     !concreteTierList.includes(rawTierParam)
 
   return (
-    <div className='max-w-5xl mx-auto shadow-lg -mt-20 z-10 bg-card rounded-md p-6 md:p-8 border space-y-10'>
+    <div className='max-w-5xl w-full min-w-0 mx-auto shadow-lg -mt-20 z-10 bg-card rounded-md px-4 py-6 sm:px-6 md:px-8 md:py-8 border space-y-10'>
       <header className='space-y-4 border-b pb-6'>
         <div className='flex flex-col gap-2 md:flex-row md:items-start md:justify-between'>
           <div>

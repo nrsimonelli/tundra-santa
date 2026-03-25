@@ -69,49 +69,51 @@ export function Chart({ data }: { data: ChartDataPoint[] }) {
   }
 
   return (
-    <ResponsiveContainer width='100%' height={300}>
-      <AreaChart data={sortedData}>
-        <defs>
-          <linearGradient id='gradient' x1='0' y1='0' x2='0' y2='1'>
-            <stop offset='5%' stopColor='var(--gradient-from)' stopOpacity={0.8} />
-            <stop offset='95%' stopColor='var(--gradient-to)' stopOpacity={0} />
-          </linearGradient>
-        </defs>
-        <XAxis
-          dataKey='timestamp'
-          stroke={RECHARTS_AXIS_STROKE}
-          tickLine={false}
-          axisLine={false}
-          tick={{ ...RECHARTS_TICK, fontSize: 10 }}
-          tickFormatter={formatTick}
-          type='number'
-          domain={['dataMin', 'dataMax']}
-          scale='time'
-          ticks={sortedData.map((d) => d.timestamp)}
-          angle={-45}
-          textAnchor='end'
-          height={60}
-          interval={0}
-        />
-        <YAxis
-          stroke={RECHARTS_AXIS_STROKE}
-          tickLine={false}
-          axisLine={false}
-          tick={RECHARTS_TICK}
-          domain={[
-            (dataMin: number) => (dataMin < 1200 ? dataMin - 100 : 1200),
-            (dataMax: number) => (dataMax > 2000 ? dataMax + 100 : 2000),
-          ]}
-        />
-        <Tooltip content={<CustomTooltip />} />
-        <Area
-          type='monotone'
-          dataKey='rating'
-          fill='url(#gradient)'
-          fillOpacity={'1'}
-          className='fill-primary'
-        />
-      </AreaChart>
-    </ResponsiveContainer>
+    <div className='w-full min-w-0'>
+      <ResponsiveContainer width='100%' height={300}>
+        <AreaChart data={sortedData}>
+          <defs>
+            <linearGradient id='gradient' x1='0' y1='0' x2='0' y2='1'>
+              <stop offset='5%' stopColor='var(--gradient-from)' stopOpacity={0.8} />
+              <stop offset='95%' stopColor='var(--gradient-to)' stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <XAxis
+            dataKey='timestamp'
+            stroke={RECHARTS_AXIS_STROKE}
+            tickLine={false}
+            axisLine={false}
+            tick={{ ...RECHARTS_TICK, fontSize: 10 }}
+            tickFormatter={formatTick}
+            type='number'
+            domain={['dataMin', 'dataMax']}
+            scale='time'
+            ticks={sortedData.map((d) => d.timestamp)}
+            angle={-45}
+            textAnchor='end'
+            height={60}
+            interval={0}
+          />
+          <YAxis
+            stroke={RECHARTS_AXIS_STROKE}
+            tickLine={false}
+            axisLine={false}
+            tick={RECHARTS_TICK}
+            domain={[
+              (dataMin: number) => (dataMin < 1200 ? dataMin - 100 : 1200),
+              (dataMax: number) => (dataMax > 2000 ? dataMax + 100 : 2000),
+            ]}
+          />
+          <Tooltip content={<CustomTooltip />} />
+          <Area
+            type='monotone'
+            dataKey='rating'
+            fill='url(#gradient)'
+            fillOpacity={'1'}
+            className='fill-primary'
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
   )
 }

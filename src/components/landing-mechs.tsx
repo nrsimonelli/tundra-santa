@@ -65,7 +65,7 @@ export default function LandingMechs() {
   )
 
   return (
-    <div className='relative z-[60] -mt-28 w-full h-[400px]'>
+    <div className='relative z-[60] -mt-10 sm:-mt-16 md:-mt-28 w-full h-[220px] sm:h-[320px] md:h-[400px]'>
       <Canvas
         key={canvasKey}
         camera={{ position: [0, 0, 4], fov: 45 }}

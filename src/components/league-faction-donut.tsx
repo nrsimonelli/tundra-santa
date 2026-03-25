@@ -36,7 +36,7 @@ export function LeagueFactionDonut({ rows }: Props) {
   }
 
   return (
-    <div className='w-full max-w-md mx-auto space-y-4'>
+    <div className='w-full min-w-0 max-w-md mx-auto space-y-4'>
       <div className='aspect-square w-full max-h-[360px] min-h-[240px]'>
         <ResponsiveContainer width='100%' height='100%'>
           <PieChart>

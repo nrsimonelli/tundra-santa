@@ -30,7 +30,7 @@ export function LeagueBidEfficiencyChart({
   data: BidEfficiencyPoint[]
 }) {
   return (
-    <div className='h-[280px] w-full'>
+    <div className='h-[280px] w-full min-w-0'>
       <ResponsiveContainer width='100%' height='100%'>
         <BarChart data={data} margin={{ left: 8, right: 8, top: 12 }}>
           <CartesianGrid

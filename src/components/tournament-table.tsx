@@ -37,7 +37,7 @@ export default function TournamentTable({
   )
 
   return (
-    <div className='max-w-5xl mx-auto shadow-lg -mt-20 z-10 bg-card rounded-md p-6'>
+    <div className='max-w-5xl w-full min-w-0 mx-auto shadow-lg -mt-20 z-10 bg-card rounded-md px-4 py-6 sm:px-6'>
       <Table>
         <TableCaption>
           {lastUpdated

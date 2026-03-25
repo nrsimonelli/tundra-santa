@@ -79,8 +79,7 @@ export default async function PlayerProfile({
   return (
     <div className='flex flex-col items-start md:flex-row justify-start flex-wrap gap-8'>
       <div className='inline-flex text-3xl font-semibold space-x-2 w-full justify-start'>
-        <p>Player profile:</p>
-        <p className='text-transparent bg-clip-text bg-gradient-to-tr to-[var(--gradient-to)] from-[var(--gradient-from)] select-none'>
+        <p className='text-transparent bg-clip-text bg-gradient-to-r to-[var(--gradient-to)] from-[var(--gradient-from)] select-none font-bold'>
           {username}
         </p>
       </div>
