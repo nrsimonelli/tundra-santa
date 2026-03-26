@@ -5,6 +5,7 @@
 @layer base {
   :root,
   :root[data-faction='nordic'] {
+    color-scheme: light;
     --gradient-from: #495aff;
     --gradient-to: #0acffe;
     /* Hero title/description on gradient band; overridden by theme/faction */
@@ -39,55 +40,21 @@
     --radius: 0.5rem;
   }
 
-  .dark,
+  /* Saxony: neutral gray ramp + muted gold accent. */
   :root[data-faction='saxony'] {
     color-scheme: dark;
 
-    --gradient-from: #525252;
-    --gradient-to: #000000;
-    --hero-foreground: 0 0% 98%;
-
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
-  }
-
-  /* Saxony: neutral gray ramp + muted gold accent (overrides shared dark block above). */
-  :root[data-faction='saxony'] {
     --gradient-from: #161616;
     --gradient-to: #000000;
     --hero-foreground: 0 0% 62%;
 
-    --background: 0 0% 4%;
+    --background: 0 0% 6%;
     --foreground: 0 0% 96%;
 
     --card: 0 0% 10%;
     --card-foreground: 0 0% 96%;
 
-    --popover: 0 0% 12%;
+    --popover: 0 0% 10%;
     --popover-foreground: 0 0% 96%;
 
     --primary: 43 72% 58%;
@@ -112,6 +79,7 @@
 
   /* Faction accents: set `data-faction` on documentElement (see faction-ui-theme.ts). */
   :root[data-faction='albion'] {
+    color-scheme: light;
     --gradient-from: #166534;
     --gradient-to: #22c55e;
     --primary: 142 71% 36%;
@@ -119,6 +87,7 @@
   }
 
   :root[data-faction='crimea'] {
+    color-scheme: light;
     --gradient-from: #854d0e;
     --gradient-to: #ca8a04;
     --primary: 38 92% 44%;
@@ -126,6 +95,7 @@
   }
 
   :root[data-faction='polania'] {
+    color-scheme: light;
     --gradient-from: #7f1d1d;
     --gradient-to: #ef4444;
     --primary: 0 72% 51%;
@@ -134,48 +104,52 @@
 
   /* Rusviet: red surfaces, white body text; hero = white → off-white; nav/title red via --hero-foreground. */
   :root[data-faction='rusviet'] {
-    color-scheme: light;
+    color-scheme: dark;
 
-    --hero-gradient-from: #ffffff;
-    --hero-gradient-to: #f2f2f4;
+    --hero-gradient-from: #0f0203;
+    --hero-gradient-to: #0f0203;
 
     /* Charts / gradient text: near-white ramp (not the hero band). */
-    --gradient-from: #ffffff;
-    --gradient-to: #fff1f2;
+    --gradient-from: #e63946;
+    --gradient-to: #591116;
 
     --hero-foreground: 0 62% 38%;
+    /* --hero-foreground: 354 37% 73%; */
 
-    --background: 0 62% 40%;
-    --foreground: 0 0% 100%;
+    --background: 355 76.47% 3.33%;
+    --foreground: 0 62% 38%;
+    /* --foreground: 351.43 70% 96.08%; */
 
-    --card: 0 61% 44%;
-    --card-foreground: 0 0% 100%;
+    --card: 354.29 67.74% 6.078%;
+    --card-foreground: 351.43 70% 96.08%;
 
-    --popover: 0 62% 40%;
-    --popover-foreground: 0 0% 100%;
+    --popover: 354.2857 67.7419% 6.0784%;
+    --popover-foreground: 351.4286 70% 96.0784%;
 
-    --primary: 0 0% 99%;
-    --primary-foreground: 0 60% 28%;
+    --primary: 355.4913 77.5785% 56.2745%;
+    --primary-foreground: 354 76% 3.33%;
 
-    --secondary: 0 58% 44%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 356.4706 71.831% 13.9216%;
+    --secondary-foreground: 353.1429 100% 93.1373%;
 
-    --muted: 0 56% 42%;
-    --muted-foreground: 0 0% 94%;
+    --muted: 354.375 61.5385% 10.1961%;
+    --muted-foreground: var(--foreground);
+    /* --muted-foreground: 354 37% 73%; */
 
-    --accent: 0 58% 52%;
+    --accent: 354.0331 79.0393% 44.902%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 32%;
+    --destructive: 349.2135 100% 65.098%;
     --destructive-foreground: 0 0% 100%;
 
     /* Same hue/chroma as --background; only ~3–4% lower L so rules don’t read brown/maroon. */
-    --border: 0 62% 36%;
-    --input: 0 62% 36%;
-    --ring: 0 62% 38%;
+    --border: 354 53.5714% 10.9804%;
+    --input: 353.2075 55.7895% 18.6275%;
+    --ring: 353.6842 100% 59.0196%;
   }
 
   :root[data-faction='togawa'] {
+    color-scheme: light;
     --gradient-from: #581c87;
     --gradient-to: #c084fc;
     --primary: 271 81% 52%;
@@ -207,4 +181,15 @@
   :root[data-faction='saxony'] .site-hero :is(h1, h2, h3, h4, h5, h6) {
     color: hsl(var(--hero-foreground));
   }
+  /* :root[data-faction='rusviet'] body {
+    color: hsl(var(--muted-foreground));
+  }
+
+  :root[data-faction='rusviet'] :is(h1, h2, h3, h4, h5, h6) {
+    color: hsl(var(--foreground));
+  }
+
+  :root[data-faction='rusviet'] .site-hero :is(h1, h2, h3, h4, h5, h6) {
+    color: hsl(var(--hero-foreground));
+  } */
 }

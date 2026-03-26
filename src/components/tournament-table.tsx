@@ -33,7 +33,7 @@ export default function TournamentTable({
 }: TournamentTableProps) {
   const [showCrowns, setShowCrowns] = useLocalStorage<boolean>(
     'tournament-show-crowns',
-    false
+    false,
   )
 
   return (
@@ -62,7 +62,7 @@ export default function TournamentTable({
                       <Crown
                         className={cn(
                           'h-4 w-4 cursor-pointer transition-colors',
-                          showCrowns ? 'text-primary' : 'text-black'
+                          showCrowns ? 'text-primary' : 'text-muted-foreground',
                         )}
                         onClick={() => setShowCrowns(!showCrowns)}
                       />
@@ -114,14 +114,14 @@ export default function TournamentTable({
                             key={finalist.id}
                             className={cn(
                               'inline-flex items-center transition-all duration-300 ease-in-out',
-                              isWinner && showCrowns && 'gap-1'
+                              isWinner && showCrowns && 'gap-1',
                             )}
                           >
                             {isWinner && (
                               <span
                                 className={cn(
                                   'inline-flex items-center justify-center flex-shrink-0 transition-all duration-300 ease-in-out overflow-hidden',
-                                  showCrowns ? 'w-3 h-3' : 'w-0'
+                                  showCrowns ? 'w-3 h-3' : 'w-0',
                                 )}
                               >
                                 <Crown
@@ -129,14 +129,14 @@ export default function TournamentTable({
                                     'h-3 w-3 text-primary transition-all duration-300 ease-in-out',
                                     showCrowns
                                       ? 'opacity-100 scale-100'
-                                      : 'opacity-0 scale-0'
+                                      : 'opacity-0 scale-0',
                                   )}
                                 />
                               </span>
                             )}
                             <Link
                               href={`/leaderboard/${encodeURIComponent(
-                                finalist.username
+                                finalist.username,
                               )}`}
                               className='transition-all duration-300 ease-in-out'
                             >
@@ -156,13 +156,13 @@ export default function TournamentTable({
                     <span
                       className={cn(
                         'inline-flex items-center transition-all duration-300 ease-in-out',
-                        showCrowns && 'gap-1'
+                        showCrowns && 'gap-1',
                       )}
                     >
                       <span
                         className={cn(
                           'inline-flex items-center justify-center flex-shrink-0 transition-all duration-300 ease-in-out overflow-hidden',
-                          showCrowns ? 'w-3 h-3' : 'w-0'
+                          showCrowns ? 'w-3 h-3' : 'w-0',
                         )}
                       >
                         <Crown
@@ -170,13 +170,13 @@ export default function TournamentTable({
                             'h-3 w-3 text-primary transition-all duration-300 ease-in-out',
                             showCrowns
                               ? 'opacity-100 scale-100'
-                              : 'opacity-0 scale-0'
+                              : 'opacity-0 scale-0',
                           )}
                         />
                       </span>
                       <Link
                         href={`/leaderboard/${encodeURIComponent(
-                          tournament.winner_name
+                          tournament.winner_name,
                         )}`}
                         className='transition-all duration-300 ease-in-out'
                       >

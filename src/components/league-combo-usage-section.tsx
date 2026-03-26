@@ -139,17 +139,19 @@ export function LeagueComboUsageSection({ comboStats }: Props) {
               interval={0}
             />
             <Tooltip
+              cursor={{ fill: 'hsl(var(--muted)/50)' }}
               content={({ active, payload }) => {
                 if (!active || !payload?.length) return null
-                const row = payload[0].payload as { label: string; games: number }
+                const row = payload[0].payload as {
+                  label: string
+                  games: number
+                }
                 return (
                   <RechartsTooltipCard>
                     <p className='font-medium text-popover-foreground'>
                       {row.label}
                     </p>
-                    <p className='text-muted-foreground'>
-                      Games: {row.games}
-                    </p>
+                    <p className='text-muted-foreground'>Games: {row.games}</p>
                   </RechartsTooltipCard>
                 )
               }}
