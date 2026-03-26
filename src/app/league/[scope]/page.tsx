@@ -41,11 +41,8 @@ export default async function LeagueScopePage({
   const { scope } = await params
   const query = await searchParams
   const rawTierParam =
-    typeof query.tier === 'string' && query.tier.length > 0
-      ? query.tier
-      : null
-  const isAllTier =
-    rawTierParam != null && rawTierParam.toLowerCase() === 'all'
+    typeof query.tier === 'string' && query.tier.length > 0 ? query.tier : null
+  const isAllTier = rawTierParam != null && rawTierParam.toLowerCase() === 'all'
   const effectiveTierFilter: string | null = isAllTier
     ? null
     : rawTierParam != null
@@ -112,14 +109,6 @@ export default async function LeagueScopePage({
             <p className='text-muted-foreground mt-1 max-w-2xl'>
               {analytics.scopeLabel}
             </p>
-            <p className='text-sm pt-2'>
-              <Link
-                href='/league/standings/all-time'
-                className='text-primary font-medium hover:underline'
-              >
-                View all-time standings
-              </Link>
-            </p>
           </div>
         </div>
 
@@ -162,8 +151,7 @@ export default async function LeagueScopePage({
                 <Link href={`/league/all${searchSuffix}`}>All</Link>
               </Button>
               {seasons.map((row) => {
-                const active =
-                  scope !== 'all' && scope === String(row.eventId)
+                const active = scope !== 'all' && scope === String(row.eventId)
                 return (
                   <Button
                     key={`season-select-button-${row.eventId}`}
@@ -230,10 +218,6 @@ export default async function LeagueScopePage({
       <section className='space-y-3'>
         {currentTier === 'all' && (
           <div className='rounded-md border border-dashed p-4 text-sm text-muted-foreground space-y-2'>
-            <p>
-              Standings are hidden for the All tier view. Use all-time standings
-              for cross-tier rankings across seasons.
-            </p>
             <p>
               <Link
                 href='/league/standings/all-time'
