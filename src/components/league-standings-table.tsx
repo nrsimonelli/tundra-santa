@@ -26,7 +26,6 @@ export function LeagueStandingsTable({
           <TableHead className='text-primary'>W-L</TableHead>
           <TableHead className='text-primary'>Win%</TableHead>
           <TableHead className='text-primary'>Games</TableHead>
-          <TableHead className='text-primary'>Seasons</TableHead>
           <TableHead className='text-primary'>Avg score Δ</TableHead>
           <TableHead className='text-primary'>Avg bid</TableHead>
         </TableRow>
@@ -52,7 +51,6 @@ export function LeagueStandingsTable({
               <WinRateBar rate={row.winRate} />
             </TableCell>
             <TableCell className='tabular-nums'>{row.games}</TableCell>
-            <TableCell className='tabular-nums'>{row.seasonsPlayed}</TableCell>
             <TableCell>{row.avgScoreDiff.toFixed(2)}</TableCell>
             <TableCell>{formatLeagueBid(row.avgBid)}</TableCell>
           </TableRow>

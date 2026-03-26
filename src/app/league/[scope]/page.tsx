@@ -260,7 +260,7 @@ export default async function LeagueScopePage({
           <p className='text-sm text-muted-foreground'>
             {isAllScope
               ? 'Faction matchups across all seasons. Expand a row for combo details and game history.'
-              : 'Combo matchups for this season. Expand a row to review game-level results.'}
+              : 'Combo matchups for this season. Expand a row to view game-level results.'}
           </p>
         </div>
         <Suspense
