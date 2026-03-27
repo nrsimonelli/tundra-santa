@@ -35,7 +35,7 @@ export function TopNav() {
   }, [menuOpen])
 
   return (
-    <div className='top-3 z-50 left-0 w-full absolute'>
+    <div className='top-3 z-[110] left-0 w-full absolute'>
       <div className='flex justify-between items-center max-w-5xl h-16 px-4 sm:px-6 mx-auto text-[hsl(var(--hero-foreground))]'>
         <FactionThemePicker />
         <nav
@@ -73,13 +73,13 @@ export function TopNav() {
         <>
           <button
             type='button'
-            className='fixed inset-0 z-40 bg-black/40 md:hidden'
+            className='fixed inset-0 z-[90] bg-black/40 md:hidden'
             aria-label='Close menu'
             onClick={() => setMenuOpen(false)}
           />
           <div
             id='mobile-nav-panel'
-            className='fixed left-0 right-0 z-50 md:hidden top-[calc(0.75rem+4rem)] border-b border-border/40 bg-background/95 text-foreground shadow-lg backdrop-blur-sm'
+            className='fixed left-0 right-0 z-[100] md:hidden top-[calc(0.75rem+4rem)] border-b border-border/40 bg-background/95 text-foreground shadow-lg backdrop-blur-sm'
           >
             <nav
               className='max-w-5xl mx-auto px-4 py-3 flex flex-col gap-1'

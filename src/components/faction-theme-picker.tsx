@@ -1,7 +1,14 @@
 'use client'
 
 import Image from 'next/image'
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react'
 import { useFactionTheme } from '@/components/faction-theme-provider'
 import { FACTION_THEME_IDS, type FactionThemeId } from '@/lib/faction-ui-theme'
 
@@ -29,6 +36,8 @@ const STAGGER_MS = 42
 const DURATION_MS = 280
 const COMPACT_STAGGER_MS = 28
 const COMPACT_DURATION_MS = 200
+const VIEWPORT_EDGE_PADDING_PX = 12
+const DESKTOP_OPTION_ICON_HALF_PX = 20
 
 function subscribeCompactNav(cb: () => void) {
   const mq = window.matchMedia('(max-width: 767px)')
@@ -54,7 +63,9 @@ export function FactionThemePicker() {
   const { activeFactionThemeId, setFactionTheme } = useFactionTheme()
   const [overlayMounted, setOverlayMounted] = useState(false)
   const [expanded, setExpanded] = useState(false)
+  const [desktopShiftX, setDesktopShiftX] = useState(0)
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const rootRef = useRef<HTMLDivElement | null>(null)
 
   const others = useMemo(
     () =>
@@ -68,9 +79,7 @@ export function FactionThemePicker() {
 
   const closeUnmountDelayMs = useMemo(() => {
     if (isCompactNav) {
-      return (
-        COMPACT_DURATION_MS + COMPACT_STAGGER_MS * Math.max(0, n - 1) + 100
-      )
+      return COMPACT_DURATION_MS + COMPACT_STAGGER_MS * Math.max(0, n - 1) + 100
     }
     return DURATION_MS + STAGGER_MS * Math.max(0, n - 2) + 120
   }, [isCompactNav, n])
@@ -121,8 +130,38 @@ export function FactionThemePicker() {
 
   useEffect(() => () => clearCloseTimer(), [clearCloseTimer])
 
+  useEffect(() => {
+    if (!overlayMounted || isCompactNav) {
+      setDesktopShiftX(0)
+      return
+    }
+
+    const updateDesktopShift = () => {
+      const rect = rootRef.current?.getBoundingClientRect()
+      if (!rect) return
+
+      const viewportWidth = window.innerWidth
+      const centerX = rect.left + rect.width / 2
+      const radialMenuOuterRadius = RADIAL_R + DESKTOP_OPTION_ICON_HALF_PX
+      const leftEdge = centerX - radialMenuOuterRadius
+      const rightEdge = centerX + radialMenuOuterRadius
+
+      let nextShiftX = 0
+      if (leftEdge < VIEWPORT_EDGE_PADDING_PX) {
+        nextShiftX = VIEWPORT_EDGE_PADDING_PX - leftEdge
+      } else if (rightEdge > viewportWidth - VIEWPORT_EDGE_PADDING_PX) {
+        nextShiftX = viewportWidth - VIEWPORT_EDGE_PADDING_PX - rightEdge
+      }
+      setDesktopShiftX(nextShiftX)
+    }
+
+    updateDesktopShift()
+    window.addEventListener('resize', updateDesktopShift)
+    return () => window.removeEventListener('resize', updateDesktopShift)
+  }, [overlayMounted, isCompactNav])
+
   return (
-    <div className='relative'>
+    <div ref={rootRef} className='relative'>
       <button
         type='button'
         className='flex h-10 w-10 items-center justify-center rounded-full bg-background/80 shadow-lg ring-offset-background backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
@@ -143,13 +182,13 @@ export function FactionThemePicker() {
       {overlayMounted ? (
         <>
           <div
-            className='fixed inset-0 z-40 bg-transparent'
+            className='fixed inset-0 z-[90] bg-transparent'
             aria-hidden
             onPointerDown={beginClose}
           />
           {isCompactNav ? (
             <div
-              className='pointer-events-auto absolute left-0 top-full z-50 mt-2 flex max-h-[min(70vh,24rem)] w-[min(calc(100vw-2rem),16rem)] flex-col gap-1 overflow-y-auto rounded-lg border bg-popover/95 p-2 shadow-lg'
+              className='pointer-events-auto absolute left-0 top-full z-[100] mt-2 flex max-h-[min(70vh,24rem)] w-[min(calc(100vw-2rem),16rem)] flex-col gap-1 overflow-y-auto rounded-lg border bg-popover/95 p-2 shadow-lg'
               role='listbox'
               aria-label='Other factions'
               onPointerDown={(e) => e.stopPropagation()}
@@ -195,10 +234,13 @@ export function FactionThemePicker() {
             </div>
           ) : (
             <div
-              className='pointer-events-none absolute left-1/2 top-full z-50 mt-3 flex w-max -translate-x-1/2 flex-col items-center gap-3'
+              className='pointer-events-none absolute left-1/2 top-full z-[100] mt-3 flex w-max flex-col items-center gap-3'
               role='listbox'
               aria-label='Other factions'
               onPointerDown={(e) => e.stopPropagation()}
+              style={{
+                transform: `translateX(calc(-50% + ${desktopShiftX}px))`,
+              }}
             >
               <div className='relative h-px w-px shrink-0'>
                 {others.map((id, i) => {
