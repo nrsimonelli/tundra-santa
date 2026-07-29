@@ -1,7 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { getFormattedDate, getNumericDate, cn } from '@/lib/utils'
+import {
+  getFormattedDate,
+  getNumericDate,
+  getShortNumericDate,
+  cn,
+} from '@/lib/utils'
 import EventLink from '@/components/event-link'
 import {
   Table,
@@ -49,7 +54,9 @@ export default function TournamentTable({
             <TableHead className='text-primary w-[260px] max-w-[260px]'>
               Tournament
             </TableHead>
-            <TableHead className='text-primary w-fit'>Date</TableHead>
+            <TableHead className='text-primary w-fit hidden md:table-cell'>
+              Date
+            </TableHead>
             <TableHead className='text-primary w-auto hidden md:table-cell'>
               Details
             </TableHead>
@@ -85,9 +92,12 @@ export default function TournamentTable({
                     eventId={tournament.id}
                     eventName={tournament.name}
                   />
+                  <div className='text-xs text-muted-foreground md:hidden'>
+                    {getShortNumericDate(tournament.start_date) || '—'}
+                  </div>
                 </div>
               </TableCell>
-              <TableCell className='w-fit'>
+              <TableCell className='w-fit hidden md:table-cell'>
                 {getNumericDate(tournament.start_date) || '—'}
               </TableCell>
               <TableCell className='w-auto hidden md:table-cell'>

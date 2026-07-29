@@ -33,6 +33,21 @@ export function getNumericDate(dateString: string | null): string {
   }
 }
 
+/** Short numeric date for dense mobile layouts (e.g. `12/12/25`). */
+export function getShortNumericDate(dateString: string | null): string {
+  if (!dateString) return ''
+  try {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', {
+      year: '2-digit',
+      month: '2-digit',
+      day: '2-digit',
+    })
+  } catch {
+    return dateString
+  }
+}
+
 export function removeYearFromEventName(name: string | null): string {
   if (!name) return ''
 

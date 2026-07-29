@@ -34,6 +34,23 @@ export function formatPlayerMatLabel(mat: string | null | undefined): string {
     .join(' ')
 }
 
+const PLAYER_MAT_ABBREV: Record<PlayerMatId, string> = {
+  industrial: 'Ind',
+  engineering: 'Eng',
+  militant: 'Mil',
+  patriotic: 'Pat',
+  innovative: 'Inn',
+  mechanical: 'Mec',
+  agricultural: 'Agr',
+}
+
+/** Three-letter mat label for dense mobile layouts (e.g. `industrial` → `Ind`). */
+export function formatPlayerMatAbbrev(mat: string | null | undefined): string {
+  if (mat == null || mat === '') return EM_DASH
+  const key = mat.toLowerCase() as PlayerMatId
+  return PLAYER_MAT_ABBREV[key] ?? formatPlayerMatLabel(mat).slice(0, 3)
+}
+
 function isUsableNumber(value: number | null | undefined): value is number {
   return value != null && Number.isFinite(value)
 }

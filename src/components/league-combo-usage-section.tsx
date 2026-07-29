@@ -181,8 +181,12 @@ export function LeagueComboUsageSection({ comboStats }: Props) {
             <TableHead className='text-primary'>Usage%</TableHead>
             <TableHead className='text-primary'>Win%</TableHead>
             <TableHead className='text-primary'>Avg bid</TableHead>
-            <TableHead className='text-primary'>Avg score</TableHead>
-            <TableHead className='text-primary'>Avg score Δ</TableHead>
+            <TableHead className='text-primary hidden md:table-cell'>
+              Avg score
+            </TableHead>
+            <TableHead className='text-primary hidden md:table-cell'>
+              Avg score Δ
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -203,10 +207,10 @@ export function LeagueComboUsageSection({ comboStats }: Props) {
               <TableCell className='tabular-nums'>
                 {formatLeagueBid(stat?.avgBid ?? null)}
               </TableCell>
-              <TableCell className='tabular-nums'>
+              <TableCell className='tabular-nums hidden md:table-cell'>
                 {stat?.avgScore == null ? '—' : stat.avgScore.toFixed(1)}
               </TableCell>
-              <TableCell className='tabular-nums'>
+              <TableCell className='tabular-nums hidden md:table-cell'>
                 {stat && games > 0 ? stat.avgScoreDiff.toFixed(2) : '—'}
               </TableCell>
             </TableRow>

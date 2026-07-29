@@ -1,5 +1,8 @@
 import { FactionImage } from '@/components/faction-image'
-import { formatPlayerMatLabel } from '@/lib/league-format'
+import {
+  formatPlayerMatAbbrev,
+  formatPlayerMatLabel,
+} from '@/lib/league-format'
 import { cn } from '@/lib/utils'
 
 export function LeagueComboDisplay({
@@ -20,7 +23,12 @@ export function LeagueComboDisplay({
   return (
     <div className={cn('inline-flex items-center gap-1.5', className)}>
       <FactionImage faction={faction} width={iconSize} height={iconSize} />
-      <span className='text-sm text-foreground'>{formatPlayerMatLabel(mat)}</span>
+      <span className='text-sm text-foreground md:hidden'>
+        {formatPlayerMatAbbrev(mat)}
+      </span>
+      <span className='hidden text-sm text-foreground md:inline'>
+        {formatPlayerMatLabel(mat)}
+      </span>
     </div>
   )
 }
