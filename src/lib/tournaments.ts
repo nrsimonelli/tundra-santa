@@ -35,42 +35,30 @@ type TournamentEvent = {
 
 function isFinalsGame(gameName: string | null): boolean {
   if (!gameName) return false
-  const nameLower = gameName.toLowerCase()
-  return (
-    nameLower.includes('final') ||
-    nameLower.startsWith('ff') ||
-    nameLower.includes('finals')
-  )
+  const name = gameName.trim()
+  const nameLower = name.toLowerCase()
+  // Play-ins are not the finals table
+  if (nameLower.includes('playin')) return false
+  if (nameLower.includes('final')) return true
+  // Align with parseTournamentGameName: F, FF, F 1, FF 1, FF A 1, …
+  return /^(ff|f)(\s+|$)/i.test(name)
 }
 
 async function findFinalsGame(
   supabase: Awaited<ReturnType<typeof createClient>>,
   eventId: number
 ): Promise<{ id: number; name: string | null } | null> {
-  const { data: lastGames } = await supabase
+  // Scan all event games — finals may not be among the last two by created_at
+  // (e.g. late-entered round games). Prefer the most recently created match.
+  const { data: games } = await supabase
     .from('games')
     .select('id, name, created_at')
     .eq('event', eventId)
     .order('created_at', { ascending: false })
-    .limit(2)
 
-  if (!lastGames || lastGames.length === 0) return null
+  if (!games || games.length === 0) return null
 
-  // Try the last game first
-  let finalsGame = lastGames[0]
-  if (isFinalsGame(finalsGame.name)) {
-    return finalsGame
-  }
-
-  // Try the second to last game
-  if (lastGames.length > 1) {
-    finalsGame = lastGames[1]
-    if (isFinalsGame(finalsGame.name)) {
-      return finalsGame
-    }
-  }
-
-  return null
+  return games.find((game) => isFinalsGame(game.name)) ?? null
 }
 
 async function getFinalistsForEvent(

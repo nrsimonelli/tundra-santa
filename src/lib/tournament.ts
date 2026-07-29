@@ -151,6 +151,20 @@ function parseTournamentGameName(name: string): ParsedGame {
     }
   }
 
+  // Letter-only tables within a round: R1 A, R1 B, R9 K (Scenario SnowDown, etc.)
+  const roundLetterMatch = name.match(/^R(\d+)\s+([A-Z])$/i)
+  if (roundLetterMatch) {
+    const roundNum = parseInt(roundLetterMatch[1], 10)
+    const group = roundLetterMatch[2].toUpperCase()
+    const groupCode = group.charCodeAt(0) - 64
+    return {
+      sectionKey: `round-${roundNum}`,
+      sectionLabel: `Round ${roundNum}`,
+      displayName: group,
+      sortOrder: roundNum * 1000 + groupCode,
+    }
+  }
+
   // Simple rounds: A1, B1, A2, etc. (letter = group, number = round)
   const simpleRoundMatch = name.match(/^([A-Z])(\d+)$/i)
   if (simpleRoundMatch) {
